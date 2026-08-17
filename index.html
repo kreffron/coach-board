@@ -147,6 +147,19 @@ main{flex:1;display:flex;flex-direction:column;min-width:0;min-height:0;backgrou
   padding:7px 13px;font-size:12px;font-weight:700;color:#e7edf2;backdrop-filter:blur(4px)}
 #btnZoomReset.on{display:block}
 
+/* first-run orientation card */
+#firstRun{position:absolute;right:16px;bottom:16px;z-index:17;display:none;max-width:330px;
+  background:rgba(11,16,20,.92);border:1px solid var(--line);border-radius:12px;padding:14px 15px;
+  box-shadow:0 12px 34px rgba(0,0,0,.5)}
+#firstRun.on{display:block}
+#firstRun h5{margin:0 0 7px;font-size:13px;font-weight:700}
+#firstRun ul{margin:0;padding-left:16px}
+#firstRun li{font-size:12.2px;color:#c3d0da;line-height:1.5;margin-bottom:3px}
+#firstRun .fr-foot{display:flex;gap:8px;margin-top:11px}
+@media (max-width:780px), (max-height:500px){
+  #firstRun{left:8px;right:8px;bottom:8px;max-width:none}
+}
+
 /* drill playback */
 #playBar{position:absolute;left:50%;transform:translateX(-50%);bottom:14px;z-index:16;display:none;
   align-items:center;gap:9px;background:rgba(11,16,20,.88);border:1px solid var(--line);
@@ -185,6 +198,9 @@ main{flex:1;display:flex;flex-direction:column;min-width:0;min-height:0;backgrou
 
 /* ---------- drills ---------- */
 .drill-list{display:flex;flex-direction:column;gap:6px}
+.dgroup{font-size:10.5px;text-transform:uppercase;letter-spacing:.09em;color:var(--accent);
+  font-weight:800;margin:12px 0 2px;padding-bottom:5px;border-bottom:1px solid var(--line)}
+.dgroup:first-child{margin-top:0}
 .dcard{text-align:left;width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:10px}
 .dcard:hover{border-color:#3f5060;background:#232d36}
 .dcard.active{border-color:var(--accent);background:#1c2b22}
@@ -192,6 +208,7 @@ main{flex:1;display:flex;flex-direction:column;min-width:0;min-height:0;backgrou
 .dcard .dm{font-size:11px;color:var(--muted);display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .tag{background:#101820;border:1px solid var(--line);border-radius:20px;padding:1px 7px;font-size:10px;font-weight:700;letter-spacing:.03em}
 .tag.custom{border-color:#3d6b8f;color:#8fc9ee}
+.tag.all11{border-color:#3f8f5c;color:#9be3b6;background:#132119}
 .detail h3{margin:0 0 4px;font-size:15px}
 .detail .meta{font-size:11.5px;color:var(--muted);margin-bottom:10px;display:flex;gap:7px;flex-wrap:wrap;align-items:center}
 .detail h4{margin:12px 0 4px;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--accent)}
@@ -369,7 +386,11 @@ textarea.inp{resize:vertical;min-height:64px;font-size:12.5px}
           <label class="tg"><input type="checkbox" id="tgSnap"> Snap grid</label>
         </div>
 
-        <div class="sec-title">Starting XI <span><button class="btn sm" id="btnClearNames">Clear names</button> <span id="startCount" class="tag">11</span></span></div>
+        <div class="sec-title">Starting XI <span id="startCount" class="tag">11</span></div>
+        <div class="row" style="margin-bottom:9px">
+          <button class="btn primary" id="btnPasteRoster">📋 Paste roster</button>
+          <button class="btn" id="btnClearNames">Clear names</button>
+        </div>
         <div class="plist" id="starters"></div>
 
         <div class="sec-title">Bench <button class="btn sm" id="btnAddBench">+ Add</button></div>
@@ -425,6 +446,7 @@ textarea.inp{resize:vertical;min-height:64px;font-size:12.5px}
           <input id="textInput" placeholder="Label…">
         </div>
         <button id="btnZoomReset">⤢ Reset zoom</button>
+        <div id="firstRun"></div>
         <div id="playBar"></div>
       </div>
       <div id="statusbar" class="desk-only">
@@ -446,6 +468,7 @@ textarea.inp{resize:vertical;min-height:64px;font-size:12.5px}
 <div id="printArea"></div>
 <div class="modal-bg" id="helpModal"><div class="modal" id="helpBody"></div></div>
 <div class="modal-bg" id="shareModal"><div class="modal" id="shareBody"></div></div>
+<div class="modal-bg" id="rosterModal"><div class="modal" id="rosterBody"></div></div>
 <input type="file" id="fileIn" accept=".json,application/json" style="display:none">
 <script>
 /* ============================================================
@@ -558,11 +581,12 @@ const DRILLS = [
 /* ===================== 4-2-3-1 OFFENSIVE AUTOMATIONS ===================== */
 {
   id:"au1",
-  anim:{r:[[3,5],[5,7],[5,7],[6,7]]}, name:"1 · The Wide Triangle", cat:"Automations (4-2-3-1)", dur:"12 min",
+  anim:{r:[[3,5],[5,7],[5,7],[6,7],[3,6],[3,6]]}, name:"1 · The Wide Triangle", cat:"Automations · 4-2-3-1", dur:"12 min",
   players:"6 outfield + GK + 4 mannequins", area:"Half field, full width", view:"attack",
   setup:"Half field, one full goal with a keeper. Four mannequins: one screening in front of the back line, one as the opposition left-back sitting inside #7, two as centre-backs at the top of the box. Six outfield: #4, #6, #7 (touchline), #10 (half-space), #2 and #9. Coach serves to #6 — 8 reps right, then mirror left.",
   seq:["#6 recycles to #4.","#4 carries forward. The carry is the trigger — everything downstream keys off it.","#4 out to #7, already on the touchline. He receives to feet, not into space.","#7 sets first time inside to #10 in the half-space. No turn, no settling touch.","#10 is the third man: one touch to open, second touch is the disguised ball into the channel.","#2 takes two touches to the byline.","Cut-back to the penalty spot. Hip height or lower, never floated."],
   runs:["A — #2 underlaps the instant pass ③ is released, into the channel between their fullback and centre-back.","B — #9 attacks the near post and drags the far centre-back with him.","C — #10 finishes his own pass; he is the target of the cut-back.","D — #7 comes inside to the top of the D once #2 has gone past him."],
+  off:["#6 slides across behind the ball the moment it goes wide. He never touches it again — the angle he takes is the counter-press.","#4 steps up as the ball is released. When the ball goes forward the line behind it goes forward too; nobody stands and watches."],
   points:["#7 stands on the paint. Not five yards infield 'to be available' — on the line.","He checks his shoulder before pass ③ leaves #4's foot and receives on the back foot, half-open.","The set inside ④ is one contact. Playing round the corner first time is the skill being trained, not dribbling.","#2's underlap is timed off pass ③, not off #10's touch. Early is offside; late lets the centre-back slide across.","The cut-back never goes above hip height. If the keeper can reach it, it was the wrong ball.","#10 finishes his own pass — the commonest failure is admiring the through ball you just played.","#6 does not touch the ball after ①. He slides across as the counter-press anchor."],
   progs:["Unopposed with mannequins. Both sides, both feet.","Replace the two centre-back mannequins with live defenders who may only defend inside the box.","Add a live opposition fullback who can press #7 — now the set inside has to be real.","Free: the coach calls 'right' or 'left' as the ball leaves #6."],
   key:"From pass ① to the finish in under 9 seconds. Count it out loud so they hear the tempo.",
@@ -577,16 +601,18 @@ const DRILLS = [
     ["curve",1034,612,942,352,{n:"7",bend:30}],
     ["run",654,596,952,610,{n:"A"}],["run",886,332,986,268,{n:"B"}],
     ["run",772,492,928,362,{n:"C"}],["run",706,648,862,472,{n:"D"}],
+    ["run",546,386,636,462,{sup:true,w:3}],["run",696,498,704,408,{sup:true,w:3}],
     ["text",640,60,{t:"#7 is the bait, not the finisher — #2 attacks the space"}]
   ]
 },
 {
   id:"au2",
-  anim:{r:[[0,1],[2,3],[3,5],[3,5],[2,5],[2,4]]}, name:"2 · Up · Back · Through", cat:"Automations (4-2-3-1)", dur:"10 min",
+  anim:{r:[[0,1],[2,3],[3,5],[3,5],[2,5],[2,4],[2,4],[3,5]]}, name:"2 · Up · Back · Through", cat:"Automations · 4-2-3-1", dur:"10 min",
   players:"7 outfield + GK + 6 mannequins", area:"Attacking half, full width", view:"attack",
   setup:"Attacking half, full width. Four mannequins as the back line on the edge of the box, two more as screening midfielders 15 yards in front. #6, #8, #10 and #9 work centrally; #7 and #11 hold their touchlines until the through ball; #2 pushes up underneath #7. The combination has to start centrally — no early ball wide.",
   seq:["UP. #6 plays firm into #10's feet. Pace on it, or the screen recovers.","BACK. #10 sets first time to #8 — into his back foot, away from pressure.","THROUGH. #8 plays the third-man ball into the channel, first time.","#7 carries to the byline.","Cut-back to the penalty spot."],
   runs:["A — #10 checks into the pocket on the blind side of the screening midfielder.","B — #7 leaves the touchline as pass ② is travelling and runs the diagonal inside, across the centre-back's line of sight.","C — #9 near post.","D — #11 tucks in off his touchline and finishes at the back post.","E — #10 spins off the lay-off to the spot. Up–back–through–and–go.","F — #2 pushes up underneath #7 as the release valve if the through ball is shut off."],
+  off:["#6 pushes up and across behind the combination — the screen if it breaks down, the recycle if it does not.","#8 follows his own through ball. Playing it is not the end of his involvement."],
   points:["The 'up' pass is firm and to the correct foot. A soft one invites the screening midfielder to arrive with the ball.","The lay-off is the whole drill. Set it two or three yards away from pressure and into #8's stride, not back at his feet.","#8's through ball is first time. A touch to control closes the window.","#7 does not drift infield early to 'get involved.' He holds the line, then goes on the diagonal as pass ② travels.","Ball-side holds width, far side attacks the box. If they can do that pair of jobs on instinct, the rest of the pack gets easy.","Rotate one position every rep so every midfielder learns every role in the triangle."],
   progs:["Mannequins only. Two touches maximum.","One live screening midfielder who may intercept.","Live back four defending the box; attackers still restricted to two touches.","Condition: if the through ball is not on, the ball must reach #2 within two passes."],
   key:"Two touches. Six-second shot clock from the first pass.",
@@ -602,16 +628,18 @@ const DRILLS = [
     ["curve",1032,588,930,352,{n:"5",bend:28}],
     ["run",858,336,978,432,{n:"C"}],["run",668,36,974,232,{n:"D"}],["run",708,418,916,332,{n:"E"}],
     ["run",626,592,758,620,{n:"F"}],
+    ["run",551,396,646,436,{sup:true,w:3}],["run",632,306,722,240,{sup:true,w:3}],
     ["text",640,120,{t:"His diagonal arrives from outside everybody's field of vision"}]
   ]
 },
 {
   id:"au3",
-  anim:{r:[[7,8],[7,9],[9,11],[9,11],[7,11],[9,11]]}, name:"3 · Build · Switch · Beyond", cat:"Automations (4-2-3-1)", dur:"15 min",
+  anim:{r:[[7,8],[7,9],[9,11],[9,11],[7,11],[9,11],[2,7],[3,7],[5,9],[7,10],[7,10],[8,11]]}, name:"3 · Build · Switch · Beyond", cat:"Automations · 4-2-3-1", dur:"15 min", all11:true,
   players:"All 10 outfield + GK", area:"Two-thirds field (~75 x 70)", view:"full",
   setup:"Full 4-2-3-1 shape from your own penalty area to the opposition goal, attacking a full goal with a keeper. Run it completely unopposed for the first block so the picture is clean, then add a passive mid-block. Mark the two touchlines with cones if your players keep drifting in.",
   seq:["GK to #4. Back four splits; the pivot staggers — #6 deep, #8 half a line higher.","#4 into #6, who receives on the half-turn with his head up.","#6 swings it to #5. The pivot is the pendulum.","#5 to #3 — in the half-space, not on the touchline. #11 owns the touchline on this side.","#3 into #11's feet on the line.","#11 opens up and sets back to #8. Ball-side width has done its job.","THE SWITCH. #8 drives it to #7, who has stood on the opposite touchline the entire build-up. Flat, one line, under 1.5 seconds.","#7 receives facing forward and sets inside to #10.","#10 releases the underlap.","#2 takes it to the byline.","Cut-back to the penalty spot, 6–8 yards off the line."],
   runs:["A — #10 slides into the ball-side half-space as the switch travels.","B — #2 goes beyond #7 the moment the switch is played. #7 is the width, so #2 is never the width.","C — #9 pulls the back-post defender, then checks back to the spot to finish. Double movement.","D — #10 attacks the near post after releasing the pass.","E — #11 tucks in off the far touchline and travels 45 yards to the back post. This is the run the shape lives or dies on.","F — #7 comes inside to the top of the D once #2 has gone past him."],
+  off:["The keeper pushes up to the edge of his box as the back four splits. He is the spare man for the recycle and he has to be alive to a turnover.","#4 and #5 step up as the ball travels past them. The back line moves forward with the ball.","#3 tucks inside once the ball has switched right — he becomes the third centre-back. That is your rest defence.","#6 slides across behind the ball while the switch is in the air.","#8 follows his own switch into midfield instead of admiring it."],
   points:["Look at where #3 starts: half-space, not touchline. Two players cannot own the same lane. Fix this habit first.","Pass ⑦ is the pass that matters. Driven, flat, one line, arriving in under a second and a half.","It has to arrive with #7 already facing forward. If he has to control and turn, his fullback recovers.","#2 goes beyond #7 the instant the switch is struck — not when #7 receives. That second is the whole overlap.","Reward #11's 45-yard run even when the ball does not arrive.","Rest defence happens as the ball travels right, not after the cross. #3 is already inside, so he becomes the third centre-back."],
   progs:["Unopposed and timed. Under fourteen seconds start to finish.","Six mannequins in a passive mid-block.","Six live defenders who may press but not tackle.","Live 10v8 with the defenders countering to two goals on the halfway line."],
   key:"Two touches for everyone except #7 and #2 once the ball is in the wide channel.",
@@ -627,16 +655,21 @@ const DRILLS = [
     ["run",612,304,682,492,{n:"A"}],["run",312,564,952,618,{n:"B"}],
     ["curve",808,336,928,352,{n:"C",bend:-46,st:"run"}],
     ["run",700,520,982,500,{n:"D"}],["run",412,32,958,220,{n:"E"}],["run",706,648,884,474,{n:"F"}],
+    ["run",72,346,150,340,{sup:true,w:3}],["run",168,434,252,420,{sup:true,w:3}],
+    ["run",168,258,250,300,{sup:true,w:3}],["run",258,158,310,268,{sup:true,w:3}],
+    ["run",336,388,430,430,{sup:true,w:3}],["run",444,294,560,380,{sup:true,w:3}],
     ["text",270,650,{t:"#3 starts in the half-space — #11 owns that touchline"}]
   ]
 },
 {
   id:"au4",
-  anim:{r:[[7,8],[8,9],[9,11],[9,11],[9,11]]}, name:"4 · Drop & Go", cat:"Automations (4-2-3-1)", dur:"12 min",
+  anim:{r:[[8,9],[9,10],[10,12],[9,12],[10,12],[2,8],[5,9],[7,10],[8,11],[9,12],[9,12],[3,8]]}, name:"4 · Drop & Go", cat:"Automations · 4-2-3-1", dur:"12 min", all11:true,
   players:"All 10 outfield + GK + 6 mannequins", area:"Two-thirds field", view:"full",
   setup:"Full shape, a back four of mannequins on the edge of the box, two screening mannequins in central midfield. Phase A is scripted circulation that deliberately fails on the left and resets; Phase B is the automation. Run Phase A at proper tempo — it is not a walk-through.",
-  seq:["Phase A (faded). Every rep starts from the GK, into the pivot.","#6 swings it left to #5.","#5 to #3 in the half-space.","#3 into #11 on the touchline — the block squeezes across and the left side dies.","#11 recycles instead of forcing it. Recycling is a success, not a failure.","#6 switches to #2, who has tucked in underneath #7.","#2 sets back to #8. #8 receiving square-on and facing forward is the trigger.","#8 threads it between the two screeners into #9's feet.","#9 flicks first time around the corner into #7's run. One contact, no control touch.","#7 carries to the byline, then cuts it back."],
+  seq:["Phase A (faded). Every rep starts from the GK, into #4.","#4 into #6, the near pivot. Nobody is skipped — all eleven touch it before the finish.","#6 swings it left to #5.","#5 to #3 in the half-space.","#3 into #11 on the touchline — the block squeezes across and the left side dies.","#11 recycles instead of forcing it. Recycling is a success, not a failure.","#6 switches to #2, who has tucked in underneath #7.","#2 sets back to #8. #8 receiving square-on and facing forward is the trigger.","#8 threads it between the two screeners into #9's feet.","#9 flicks first time around the corner into #7's run. One contact, no control touch.","#7 carries to the byline.",
+    "Cut-back to the penalty spot."],
   runs:["A — Phase B. On #8's first touch, #9 drops hard into the pocket, 12 to 15 yards, sharp, finishing side-on.","B — #7 leaves the touchline and runs beyond #9 into the space the striker just vacated, crossing the centre-back's blind side. He goes on the release, not before.","C — #9 spins forward after the flick and re-attacks the near post.","D — #11 comes off the far touchline to the back post.","E — #10 arrives at the spot and finishes.","X — Read the centre-back. Touch-tight → flick. Dropping off → #9 sets back to #10, who turns and drives."],
+  off:["The keeper pushes up to the edge of his box the moment the back four splits.","#5 steps up behind the ball as Phase A circulates. Recycling only works if the line behind the ball has moved up with it.","#3 tucks inside as the ball switches right and becomes the third centre-back.","#6 slides across behind the ball rather than following it.","#2 pushes on after his pass — he stays home in Phase B but he does not stand still.","#8 follows the pass into #9 and arrives behind the flick."],
   points:["Phase A is not filler. #11 recycling instead of forcing it teaches that failing on one side is a normal outcome, not an error.","The trigger is precise: #8 receiving facing forward. Not #8 receiving. Say it that way every single time.","#9's drop is 12 to 15 yards, sharp, finishing side-on. If he drifts, the centre-back does not follow and no space appears.","#7 leaves the touchline on the release of the pass into #9, not before. Everybody goes early — count it out loud until they stop.","The flick is one contact. If #9 needs two, he read it wrong and should have set it back.","#2 stays home in Phase B. With #7 attacking the channel, the right side is already committed."],
   progs:["Mannequins, both phases scripted.","Live back four with one centre-back permitted to follow #9. Now the read is real.","Add two live central midfielders so #8 has to find the window.","Free build-up: any route through Phase A, but the finish must be the Phase B pattern."],
   key:"From the pass into #9 to the shot: three touches maximum for the whole team.",
@@ -646,48 +679,57 @@ const DRILLS = [
     ["mate",700,655,{t:"7"}],["mate",652,300,{t:"10"}],["mate",850,340,{t:"9"}],
     ["mann",900,170],["mann",900,290],["mann",900,406],["mann",900,526],["mann",782,290],["mann",782,432],
     ["ball",76,352],
-    ["pass",78,346,324,372,{n:"1",faint:true}],["pass",322,366,170,260,{n:"2",faint:true}],
-    ["pass",174,244,248,160,{n:"3",faint:true}],["pass",262,146,420,36,{n:"4",faint:true}],
-    ["pass",434,44,338,362,{n:"5",faint:true}],["pass",342,390,424,538,{n:"6",faint:true}],
-    ["pass",434,532,468,446,{n:"7",faint:true}],
+    ["pass",78,346,152,420,{n:"1",faint:true}],["pass",176,432,320,374,{n:"2",faint:true}],
+    ["pass",322,366,170,260,{n:"3",faint:true}],
+    ["pass",174,244,248,160,{n:"4",faint:true}],["pass",262,146,420,36,{n:"5",faint:true}],
+    ["pass",434,44,338,362,{n:"6",faint:true}],["pass",342,390,424,538,{n:"7",faint:true}],
+    ["pass",434,532,468,446,{n:"8",faint:true}],
     ["run",844,336,732,404,{n:"A"}],
-    ["pass",484,436,726,410,{n:"8"}],
+    ["pass",484,436,726,410,{n:"9"}],
     ["run",706,648,950,562,{n:"B"}],
-    ["pass",738,400,944,556,{n:"9"}],["carry",962,566,1036,600,{n:"10"}],
-    ["curve",1034,596,930,356,{n:"11",bend:28}],
+    ["pass",738,400,944,556,{n:"10"}],["carry",962,566,1036,600,{n:"11"}],
+    ["curve",1034,596,930,356,{n:"12",bend:28}],
     ["run",734,394,960,470,{n:"C"}],["run",434,32,970,226,{n:"D"}],["run",658,300,920,336,{n:"E"}],
+    ["run",72,346,146,336,{sup:true,w:3}],["run",168,258,248,300,{sup:true,w:3}],
+    ["run",258,156,322,268,{sup:true,w:3}],["run",336,384,420,440,{sup:true,w:3}],
+    ["run",436,538,560,570,{sup:true,w:3}],["run",476,438,636,436,{sup:true,w:3}],
+    ["run",168,434,258,450,{sup:true,w:3}],
     ["text",250,650,{t:"PHASE A — scripted circulation that fails, and resets"}]
   ]
 },
 {
   id:"au5",
-  anim:{r:[[7,9],[6,11],[9,11],[7,10]]}, name:"5 · The Blind-Side Switch", cat:"Automations (4-2-3-1)", dur:"15 min",
-  players:"10 outfield + GK vs 8 defenders", area:"Two-thirds + two counter-goals", view:"twothirds",
-  setup:"10 v 8 — a back four and a midfield four defending the full goal with a keeper, countering to two goals on the halfway line. Attacking team starts with #5. Set the defensive block up already shifted right so the players can see the space before they have to create it, then remove that head start.",
-  seq:["#5 to #4 across the back. Ball speed here sets up everything that follows.","#4 to #2, tucked in underneath the wide midfielder. Bait 1 — the block starts to slide.","#2 out to #7 on the touchline. Bait 2 — now they are committed to that side.","#7 sets inside to #10.","#10 lays it back into #6. Two forward passes have bought two lines of shift.","BLIND-SIDE PASS. #8 has stood on the far side of the pressing line the whole sequence, already open. #6 finds him.","THE SWITCH. Two touches to draw, then the diagonal to #11, who has held the far touchline doing nothing for eleven seconds.","#11 drives infield at his fullback, dragging him inside and opening the touchline behind.","#11 releases #3 into the space he just vacated.","Cut-back to the spot."],
+  anim:{r:[[8,10],[7,12],[10,12],[8,11],[2,8],[3,8],[4,9],[4,10],[8,11],[8,12]]}, name:"5 · The Blind-Side Switch", cat:"Automations · 4-2-3-1", dur:"15 min", all11:true,
+  players:"All 10 outfield + GK vs 8 + GK", area:"Full pitch", view:"full",
+  setup:"10 v 8 on a full pitch — a back four and a midfield four defending the goal with a keeper, countering straight back at yours. Every attack starts from your keeper, and every player touches it before the ball is crossed. Set the defensive block up already shifted right so your players can see the space before they have to create it, then remove that head start.",
+  seq:["GK into #5. Back four splits, the pivot staggers — #6 deep, #8 half a line higher.","#5 across to #4. Ball speed here sets up everything that follows.","#4 to #2, tucked in underneath the wide midfielder. Bait 1 — the block starts to slide.","#2 out to #7 on the touchline. Bait 2 — now they are committed to that side.","#7 sets inside to #10.","#10 lays it back into #6. Two forward passes have bought two lines of shift.","BLIND-SIDE PASS. #8 has stood on the far side of the pressing line the whole sequence, already open. #6 finds him.","THE SWITCH. #8 drives the diagonal to #11, who has held the far touchline doing nothing for eleven seconds.","#11 drives infield at his full-back, dragging him inside and opening the touchline behind.","#11 releases #3 into the space he just vacated.","#3 takes it to the byline.","Cut-back to the spot."],
   runs:["A — #3 overlaps outside #11 the moment the switch is played. #11 owns the width until he moves off it; #3 takes it over.","B — #7 comes off the far touchline and runs 45 yards to the back post, starting the moment #8 receives. In the box inside 5 seconds.","C — #9 pulls the near-post defender, then checks back to the spot and finishes.","D — #10 holds the top of the D.","X — If #11 beats his man cleanly, skip the overlap and hit the back post first time."],
-  points:["#11 holds the touchline for the entire sequence and does nothing. His discipline in doing nothing is what makes the pattern work — praise it out loud.","Baits ② and ③ have to look like genuine attempts. If the ball goes right lazily there is nothing to switch into.","#8's position is coached before the ball ever arrives: blind side of the near pressing midfielder, hips already open to the left.","Ball speed on the switch: driven. A floated switch gives the block four seconds to slide back across.","#11 attacks the fullback's inside shoulder to drag him off the line, then releases #3.","#7's 45-yard back-post run starts on the blind-side pass, not on the cross. Stopwatch it."],
-  progs:["Defenders passive, jogging only. Teach the picture first.","Defenders live but no tackling in the wide areas, so the 1v1 always happens.","Fully live 10v8 with the counter-goals active.","10v10, defenders allowed to score in the big goal on the counter."],
-  key:"The ball must reach #11 within eight seconds of leaving #5.",
+  off:["The keeper pushes up and stays up. He started the move and he is the first line of the counter.","#5 and #4 step up behind the ball while the bait is being laid. Two lines of shift only happen if both lines move.","#2 pushes on after his pass rather than watching the side he just fed.","#6 slides across as the ball is switched — he is the screen if the diagonal is intercepted.","#8 does not stand still after playing the switch. He goes with it."],
+  points:["#11 holds the touchline for the entire sequence and does nothing. His discipline in doing nothing is what makes the pattern work — praise it out loud.","Baits ③ and ④ have to look like genuine attempts. If the ball goes right lazily there is nothing to switch into.","#8's position is coached before the ball ever arrives: blind side of the near pressing midfielder, hips already open to the left.","Ball speed on the switch: driven. A floated switch gives the block four seconds to slide back across.","#11 attacks the full-back's inside shoulder to drag him off the line, then releases #3.","#7's 45-yard back-post run starts on the blind-side pass, not on the cross. Stopwatch it.","Your keeper is in the pattern, so he is also in the counter. He does not switch off once he has passed it."],
+  progs:["Defenders passive, jogging only. Teach the picture first.","Defenders live but no tackling in the wide areas, so the 1v1 always happens.","Fully live 10v8, defenders countering at your goal.","10v10 — the patterns should still appear, just less often."],
+  key:"All eleven touch it, and the ball reaches #11 within ten seconds of leaving the keeper.",
   items:[
-    ["mate",360,252,{t:"5"}],["mate",360,430,{t:"4"}],["mate",470,545,{t:"2"}],["mate",640,655,{t:"7"}],
-    ["mate",690,432,{t:"10"}],["mate",505,378,{t:"6"}],["mate",640,280,{t:"8"}],["mate",520,28,{t:"11"}],
-    ["mate",438,122,{t:"3"}],["mate",832,340,{t:"9"}],
-    ["opp",700,560],["opp",762,470],["opp",802,600],["opp",852,420],
-    ["opp",882,300],["opp",902,522],["opp",932,378],["opp",952,222],
-    ["goal",358,150],["goal",358,530],
-    ["ball",374,264],
-    ["pass",376,262,356,414,{n:"1"}],["pass",372,442,462,532,{n:"2"}],["pass",478,558,632,644,{n:"3"}],
-    ["pass",646,640,694,450,{n:"4"}],["pass",684,424,516,386,{n:"5"}],["pass",518,368,632,296,{n:"6"}],
-    ["pass",648,266,532,44,{n:"7"}],["carry",536,52,648,118,{n:"8"}],["pass",664,120,758,36,{n:"9"}],
-    ["carry",774,30,1000,26,{n:"10"}],["curve",1008,30,928,332,{n:"11",bend:-32}],
-    ["run",444,126,700,30,{n:"A"}],["run",646,648,984,456,{n:"B"}],
-    ["curve",838,336,924,350,{n:"C",bend:-40,st:"run"}],["run",696,428,862,400,{n:"D"}],
-    ["text",470,655,{t:"BAIT RIGHT — SWITCH LEFT"}]
+    ["mate",60,340,{t:"1"}],["mate",175,250,{t:"5"}],["mate",175,430,{t:"4"}],["mate",340,120,{t:"3"}],
+    ["mate",330,560,{t:"2"}],["mate",400,390,{t:"6"}],["mate",520,270,{t:"8"}],["mate",560,470,{t:"10"}],
+    ["mate",470,30,{t:"11"}],["mate",620,655,{t:"7"}],["mate",800,340,{t:"9"}],
+    ["opp",600,610],["opp",680,500],["opp",740,390],["opp",800,270],
+    ["opp",820,600],["opp",870,470],["opp",890,300],["opp",930,230],
+    ["ball",78,352],
+    ["pass",78,346,168,262,{n:"1"}],["pass",182,266,170,418,{n:"2"}],["pass",182,438,322,548,{n:"3"}],
+    ["pass",340,566,612,644,{n:"4"}],["pass",624,640,570,486,{n:"5"}],["pass",552,462,412,398,{n:"6"}],
+    ["pass",396,376,516,286,{n:"7"}],["pass",528,258,480,44,{n:"8"}],["carry",484,38,660,180,{n:"9"}],
+    ["pass",672,186,752,36,{n:"10"}],
+    ["carry",768,30,1000,26,{n:"11"}],["curve",1008,30,928,336,{n:"12",bend:-32}],
+    ["run",346,126,700,30,{n:"A"}],["run",626,648,984,456,{n:"B"}],
+    ["curve",806,336,924,344,{n:"C",bend:-40,st:"run"}],["run",566,466,862,400,{n:"D"}],
+    ["run",72,346,150,340,{sup:true,w:3}],["run",182,256,262,290,{sup:true,w:3}],
+    ["run",182,436,276,470,{sup:true,w:3}],["run",338,566,456,600,{sup:true,w:3}],
+    ["run",406,384,470,300,{sup:true,w:3}],["run",526,276,600,230,{sup:true,w:3}],
+    ["text",230,625,{t:"BAIT RIGHT — SWITCH LEFT"}]
   ]
 },
 {
-  id:"au6", name:"6 · Automation Under Fire", cat:"Automations (4-2-3-1)", dur:"20 min (3 x 6)",
+  id:"au6", name:"6 · Automation Under Fire", cat:"Automations · 4-2-3-1", dur:"20 min (3 x 6)",
   players:"10 outfield + GK vs 7 + GK", area:"Two-thirds, two counter-goals", view:"full",
   setup:"Attacking team in the full 4-2-3-1 with #7 and #11 starting on their touchlines. Defending team: back four, three midfielders and a keeper in the full goal. Two five-yard counter-goals on the halfway line. Every attack starts from your keeper. Rotate the defending group each block.",
   seq:["No scripted sequence — this one is live. Call a code as the keeper releases, then stop calling it and let them choose.","RED — Wide triangle: wide mid sets, fullback goes beyond (Drills 1 & 3).","BLUE — #9 drops, wide mid runs beyond from the touchline (Drill 4).","GOLD — Blind-side switch, far wide mid 1v1, back-post arrival (Drill 5)."],
@@ -895,8 +937,8 @@ const DRILLS = [
     ["cone",340,340],["cone",520,340],["cone",720,215],["cone",720,465],
     ["mate",340,340,{t:"S"}],["mate",520,340,{t:"10"}],["mate",720,215,{t:"9"}],["mate",720,465,{t:"T"}],
     ["ball",358,352],
-    ["pass",360,346,506,342,{n:"1"}],["run",560,300,700,225,{n:"A"}],
-    ["pass",528,326,704,224,{n:"2"}],["pass",728,232,724,450,{n:"3"}],
+    ["pass",360,346,506,342,{n:"1"}],["run",706,232,800,182,{n:"A"}],
+    ["pass",528,326,794,188,{n:"2"}],["pass",802,196,730,448,{n:"3"}],
     ["run",356,388,510,388],
     ["text",525,570,{t:"Half-turn, then the forward pass · follow your pass"}]
   ]
@@ -968,8 +1010,8 @@ const DRILLS = [
   items:[
     ["mate",160,250,{t:"5"}],["mate",160,430,{t:"4"}],["mate",280,560,{t:"2"}],["mate",620,25,{t:"11"}],["mate",620,655,{t:"7"}],
     ["ball",176,262],
-    ["pass",178,258,158,416,{n:"1"}],["pass",172,442,272,548,{n:"2"}],["pass",292,552,610,642,{n:"3"}],
-    ["pass",290,548,612,40,{n:"4",c:"#37c86b"}],
+    ["pass",178,258,158,416,{n:"1"}],["pass",172,442,272,548,{n:"2"}],
+    ["pass",292,548,612,40,{n:"3"}],
     ["text",525,340,{t:"Driven · flat · one line · under 1.5 seconds"}]
   ]
 },
@@ -995,8 +1037,8 @@ const DRILLS = [
   items:[
     ["mate",340,250],["mate",760,250],["mate",340,440],["mate",760,440],
     ["ball",358,262],["ball",358,452],
-    ["pass",360,256,742,252,{n:"1"}],
-    ["curve",742,444,362,444,{n:"2",bend:-70}],
+    ["pass",360,256,742,252],
+    ["curve",742,444,362,444,{bend:-70}],
     ["mann",550,440],
     ["text",550,180,{t:"DRIVEN — along the ground"}],["text",550,555,{t:"CLIPPED — lofted over the mannequin"}]
   ]
@@ -1010,7 +1052,7 @@ const DRILLS = [
   items:[
     ["mate",700,240,{t:"S"}],["mate",800,420,{t:"10"}],["mate",760,140,{t:"9"}],
     ["ball",718,252],
-    ["pass",718,248,786,406,{n:"1"}],["pass",802,400,772,168,{n:"2"}],
+    ["pass",718,248,786,406,{n:"1"}],["pass",802,400,888,242,{n:"2"}],
     ["run",770,158,900,250,{n:"A"}],["shot",912,262,1035,332,{n:"3"}],
     ["run",810,410,940,400],
     ["text",860,590,{t:"Finish the session with goals going in"}]
@@ -1347,7 +1389,7 @@ const DRILLS = [
     ["opp",470,215],["opp",480,470],["opp",640,285],["opp",655,415],
     ["coach",525,120],["mate",470,120],["mate",580,120],
     ["ball",562,310],
-    ["run",470,135,620,240],["run",580,135,700,330],
+    ["run",470,135,440,215],["run",580,135,700,300],
     ["pass",565,305,650,280],["shot",672,285,776,310],
     ["text",530,580,{t:"Turnover → coach releases two fresh attackers → 6 seconds"}]
   ]
@@ -1418,6 +1460,643 @@ const DRILLS = [
 ];
 
 /* ============================================================
+   AUTOMATIONS FOR OTHER SHAPES — 3-5-2, 4-3-3, 4-4-2
+   Numbers match the app's own numbering for each formation, so a
+   pattern maps straight onto the Lineup tab.
+     3-5-2  back three 6-5-4, wing-backs 3 and 2, midfield 10-8-7, strikers 9 and 11
+     4-3-3  back four 3-5-4-2, midfield 8-10-6, front three 11-9-7
+     4-4-2  back four 3-5-4-2, midfield 11-8-6-7, strikers 9 and 10
+
+   Each pack has three full-pitch automations flagged all11 — every
+   outfield player AND the keeper touches the ball before the finish —
+   plus one close-up pattern for a smaller group.
+   ============================================================ */
+DRILLS.push(
+
+/* ===================== 3-5-2 ===================== */
+{
+  id:"m1", name:"1 · The Long Switch", cat:"Automations · 3-5-2", dur:"15 min", all11:true,
+  players:"All 10 outfield + GK", area:"Full pitch", view:"full",
+  setup:"The whole point of three at the back is that you have a spare man to circulate with and two wing-backs holding the touchlines. Walk the ball across the back three to drag the block onto one side, then find the wing-back on the other, who has been standing alone for ten seconds. Everybody touches it on the way through — if a player is skipped, restart. Unopposed until the picture is clean, then add a passive mid-block.",
+  seq:["GK into #4, the right centre-back. The back three splits and both wing-backs go to the paint.",
+    "#4 across to #5 in the middle.",
+    "#5 across to #6, the left centre-back.",
+    "#6 out to #3 on the left touchline. This is the bait — the block slides.",
+    "#3 inside to #10 in the left half-space.",
+    "#10 lays it back into #8. Two forward passes have bought two lines of shift.",
+    "THE SWITCH. #8 drives it flat to #2, who has held the right touchline the whole sequence. Under 1.5 seconds, and it arrives with him facing forward.",
+    "#2 sets inside to #7, the near shuttler.",
+    "#7 drives it into #11, the near striker, who has come short with his back to goal.",
+    "#11 sets round the corner into #2's overlap.",
+    "#2 takes it to the byline.",
+    "Cut-back to the penalty spot, hip height or lower."],
+  runs:["A — #2 overlaps beyond #7 the moment he has set it inside. He is not finished when he passes.",
+    "B — #11 spins off his own lay-off and attacks the near post.",
+    "C — #9 pulls the back-post defender, then checks back to the spot to finish. Double movement.",
+    "D — #10 arrives late at the top of the box for anything cut behind the strikers."],
+  off:["The keeper follows the ball across his goal — he is the spare man if the switch has to come back.","The two outside centre-backs step up behind the ball as it goes past them; #5 carries the back line forward as the spare man.","#3 tucks inside once the ball has switched right. In a back three the far wing-back becomes the fourth defender.","#8 slides across behind the ball instead of chasing it.","#7 follows his pass towards the edge of the box."],
+  points:["Every player touches it. Say the number out loud as each one receives — it forces the shape to stay connected.",
+    "The wing-backs are the width. If one comes inside while the ball is on his side, there is nothing to switch into.",
+    "Ball speed across the back three is what buys the shift. Slow circulation just lets them slide with you.",
+    "Pass ⑦ is driven and flat. Loft it and the block gets back across before it lands.",
+    "#11 comes short to feet; #9 stays on the last shoulder. Never both to the same place.",
+    "Near post, penalty spot, top of the box. Three heights of ball covered by three different players."],
+  progs:["Unopposed and timed — under twenty seconds from GK to finish, all eleven touches.",
+    "Six mannequins as a mid-block that slides.",
+    "Live back five who may press but not tackle.",
+    "Coach calls 'left' or 'right' as the keeper releases, so they have to read which side is the bait."],
+  key:"All eleven touch it, and the ball reaches the far wing-back inside eight seconds.",
+  anim:{r:[[8,10],[10,12],[9,12],[7,12],[3,6],[3,7],[5,9],[4,8],[7,11],[7,11],[9,12]]},
+  items:[
+    ["mate",60,340,{t:"1"}],["mate",175,215,{t:"6"}],["mate",165,340,{t:"5"}],["mate",175,465,{t:"4"}],
+    ["mate",330,40,{t:"3"}],["mate",430,645,{t:"2"}],["mate",430,230,{t:"10"}],["mate",360,350,{t:"8"}],
+    ["mate",450,455,{t:"7"}],["mate",760,272,{t:"9"}],["mate",760,410,{t:"11"}],
+    ["ball",78,352],
+    ["pass",78,346,168,458,{n:"1"}],["pass",172,450,178,356,{n:"2"}],
+    ["pass",168,326,180,232,{n:"3"}],["pass",188,206,318,54,{n:"4"}],
+    ["pass",342,52,424,214,{n:"5"}],["pass",424,246,372,338,{n:"6"}],
+    ["pass",368,364,422,631,{n:"7"}],["pass",442,637,456,472,{n:"8"}],
+    ["pass",466,462,756,428,{n:"9"}],["pass",770,428,912,600,{n:"10"}],
+    ["carry",928,608,1030,622,{n:"11"}],["curve",1032,618,930,352,{n:"12",bend:-30}],
+    ["run",436,651,860,610,{n:"A"}],["run",766,416,982,462,{n:"B"}],
+    ["curve",766,278,928,348,{n:"C",bend:-40,st:"run"}],["run",436,238,880,392,{n:"D"}],
+    ["run",72,346,92,258,{sup:true,w:3}],["run",182,458,268,470,{sup:true,w:3}],
+    ["run",182,222,272,250,{sup:true,w:3}],["run",172,346,268,360,{sup:true,w:3}],
+    ["run",336,48,410,140,{sup:true,w:3}],["run",366,356,470,400,{sup:true,w:3}],
+    ["run",456,462,600,500,{sup:true,w:3}],
+    ["text",620,120,{t:"one wing-back always holds the far touchline"}]
+  ]
+},
+{
+  id:"m2", name:"2 · Drop and Spin", cat:"Automations · 3-5-2", dur:"12 min",
+  players:"7 outfield + GK + 6 mannequins", area:"Attacking half", view:"attack",
+  setup:"The close-up pattern for the strike partnership, and the reason to play two up top. One forward drops into the pocket, the other spins off his shoulder the instant the pass is released. Four mannequins as the back line, two as screening midfielders.",
+  seq:["#5 carries out of the back three. The carry is the trigger — nobody steps to a spare centre-back.",
+    "#5 threads it into #9's feet as he drops. Firm, or the screener recovers.",
+    "#9 sets first time to #8. One contact.",
+    "#8 slides it into the channel for #11 spinning in behind.",
+    "#11 takes it to the byline.",
+    "Cut-back to the penalty spot."],
+  runs:["A — #9 drops 12 to 15 yards, sharp, finishing side-on. If he drifts, the centre-back does not follow and no space appears.",
+    "B — #11 spins off #9's shoulder as pass ② is released, not when it arrives.",
+    "C — #2 overlaps outside to hold the full-back and stop him tucking in.",
+    "D — #10 arrives at the penalty spot for the cut-back.",
+    "E — #9 spins forward after his lay-off and attacks the near post."],
+  off:["#5 steps up behind his own pass. A centre-back who plays forward and stops is a centre-back the counter goes through.","#8 follows his through ball towards the edge of the box.","#3 leaves the far touchline as the ball goes into the channel and fills the back post."],
+  points:["The two movements are simultaneous. One drops, one goes — if both check, the centre-backs stay where they are.",
+    "The lay-off is the whole drill: two or three yards away from pressure, into #8's stride.",
+    "#8 plays the through ball first time. A settling touch closes the window.",
+    "#11 runs the shoulder of the far centre-back, not the near one. That is the blind side.",
+    "#9 does not admire his lay-off. He is the near-post runner on the cut-back."],
+  progs:["Mannequins only, both sides.",
+    "One centre-back live and allowed to follow #9 — now the read is real.",
+    "Add two live screening midfielders so #8 has to find the window.",
+    "Swap the strikers' roles every rep so both learn to drop and to spin."],
+  key:"From the pass into feet to the shot: three touches maximum for the whole team.",
+  anim:{r:[[1,2],[2,4],[2,5],[4,6],[3,6],[2,5],[4,6],[4,6]]},
+  items:[
+    ["mate",545,340,{t:"5"}],["mate",630,430,{t:"8"}],["mate",690,230,{t:"10"}],
+    ["mate",850,282,{t:"9"}],["mate",820,412,{t:"11"}],["mate",620,640,{t:"2"}],["mate",620,40,{t:"3"}],
+    ["mann",900,180],["mann",900,290],["mann",900,400],["mann",900,510],["mann",780,268],["mann",780,432],
+    ["ball",562,352],
+    ["carry",562,346,636,340,{n:"1"}],["pass",652,338,708,322,{n:"2"}],
+    ["pass",712,332,640,418,{n:"3"}],["pass",648,432,944,468,{n:"4"}],
+    ["carry",962,478,1034,502,{n:"5"}],["curve",1032,498,930,352,{n:"6",bend:26}],
+    ["run",844,286,714,318,{n:"A"}],["run",826,412,942,466,{n:"B"}],
+    ["run",626,646,900,600,{n:"C"}],["run",696,234,916,342,{n:"D"}],
+    ["run",718,328,958,428,{n:"E"}],
+    ["run",650,344,700,400,{sup:true,w:3}],["run",654,436,760,470,{sup:true,w:3}],
+    ["run",626,46,900,180,{sup:true,w:3}],
+    ["text",700,120,{t:"one drops, one goes — at the same moment"}]
+  ]
+},
+{
+  id:"m3", name:"3 · Three in the Channel", cat:"Automations · 3-5-2", dur:"15 min", all11:true,
+  players:"All 10 outfield + GK", area:"Full pitch", view:"full",
+  setup:"A 3-5-2 has no winger, so width has to be manufactured by getting three bodies into one channel — the wing-back, the near shuttler and a striker drifting across. Build out through everybody first so the block has to shift, then load the right channel. Against a back four that is a 3v2 every time. Right side first, then mirror it.",
+  seq:["GK into #5, the middle centre-back.",
+    "#5 out to #6, the left centre-back.",
+    "#6 up the line to #3.",
+    "#3 inside to #10 in the left half-space. The block leans left.",
+    "#10 back into #8, the pivot.",
+    "#8 switches the point to #4, the right centre-back.",
+    "#4 drives it forward into #7, the right shuttler.",
+    "#7 out to #2, high on the right touchline.",
+    "#2 into #11, who has drifted across into the channel with his back to goal.",
+    "#11 sets round the corner into #2's overlap. Three of ours are now in one channel.",
+    "#2 takes it to the byline.",
+    "Cut-back to the penalty spot."],
+  runs:["A — #11 drifts across into the channel as the ball travels wide. Him leaving the middle is what drags a centre-back out.",
+    "B — #7 follows his pass into the channel. Wing-back, shuttler, striker — count all three out loud.",
+    "C — #2 goes beyond the instant he has set it inside. He is not finished when he passes.",
+    "D — #9 pulls the near-post defender, then checks back to the spot to finish.",
+    "E — #10 travels from the far half-space and arrives at the back post."],
+  off:["The keeper shifts across with the ball and steps up as the back three splits.","#5 steps into midfield as the spare man; #6 pushes up the left as the ball goes that way.","#3 comes inside as soon as the ball is switched right — the far wing-back is the fourth defender.","#4 steps up behind the ball once it is in the right channel. That is your rest defence.","#8 slides across behind the ball, always between it and your own goal."],
+  points:["Three players in the channel before the cross goes in, and #9 alone in the middle.",
+    "#11 receives on the half-turn, never square. Square and the pattern dies with his back to play.",
+    "The set round the corner is one contact, into #2's run, not his feet.",
+    "Pass ⑥ is the one that matters — it has to travel fast enough that the block is still leaning left when #4 gets it.",
+    "If the overlap is not on, #11 turns inside and recycles. Recycling is a success.",
+    "#9 must resist following #11 across. Somebody has to occupy the centre-backs."],
+  progs:["Unopposed, both sides.",
+    "Live full-back and near centre-back — now the read of drift-or-stay is real.",
+    "Add two screening midfielders so #7's arrival has to be late rather than early.",
+    "Free: whichever channel the coach calls as the ball leaves #8."],
+  key:"All eleven touch it, three of them end up in the same channel, and #9 stays central.",
+  anim:{r:[[8,9],[8,10],[9,10],[10,12],[7,12],[2,6],[3,7],[4,8],[6,10],[8,12],[7,11]]},
+  items:[
+    ["mate",60,340,{t:"1"}],["mate",175,215,{t:"6"}],["mate",165,340,{t:"5"}],["mate",175,465,{t:"4"}],
+    ["mate",330,40,{t:"3"}],["mate",420,215,{t:"10"}],["mate",380,350,{t:"8"}],["mate",500,470,{t:"7"}],
+    ["mate",620,640,{t:"2"}],["mate",720,380,{t:"11"}],["mate",760,270,{t:"9"}],
+    ["opp",600,300],["opp",600,430],["opp",880,140],["opp",880,360],["opp",880,480],
+    ["ball",78,352],
+    ["pass",78,346,168,344,{n:"1"}],["pass",172,326,180,232,{n:"2"}],
+    ["pass",188,206,318,54,{n:"3"}],["pass",342,50,414,200,{n:"4"}],
+    ["pass",416,231,392,336,{n:"5"}],["pass",368,358,186,458,{n:"6"}],
+    ["pass",190,472,490,458,{n:"7"}],["pass",510,478,612,624,{n:"8"}],
+    ["pass",636,634,722,486,{n:"9"}],["pass",738,478,832,632,{n:"10"}],
+    ["carry",840,638,1032,642,{n:"11"}],["curve",1034,638,930,352,{n:"12",bend:-30}],
+    ["run",726,388,728,478,{n:"A"}],["run",496,464,700,560,{n:"B"}],
+    ["run",628,650,812,640,{n:"C"}],
+    ["curve",766,276,928,348,{n:"D",bend:-40,st:"run"}],["run",426,222,960,240,{n:"E"}],
+    ["run",72,346,96,262,{sup:true,w:3}],["run",172,346,262,368,{sup:true,w:3}],
+    ["run",182,222,268,252,{sup:true,w:3}],["run",336,48,420,120,{sup:true,w:3}],
+    ["run",182,458,300,470,{sup:true,w:3}],["run",386,356,480,390,{sup:true,w:3}],
+    ["text",300,600,{t:"wing-back + shuttler + striker = three in one channel"}]
+  ]
+},
+{
+  id:"m4", name:"4 · The Free Man Steps In", cat:"Automations · 3-5-2", dur:"15 min", all11:true,
+  players:"All 10 outfield + GK vs 6", area:"Full pitch", view:"full",
+  setup:"Against two strikers a back three always has a spare man. Nobody presses him, so he must carry — that is the whole advantage of the shape and most teams never use it. The carry turns a 3v2 at the back into a 4v3 in midfield, and from there the ball goes right the way round the team before it goes in.",
+  seq:["GK into #6, the left centre-back.",
+    "#6 across to #5 in the middle.",
+    "#5 across to #4 on the right. He is the spare man — nobody has come.",
+    "#4 CARRIES. He keeps going until somebody steps to him. That is the trigger for everything.",
+    "#4 into #7, the right shuttler.",
+    "#7 out to #2 on the right touchline.",
+    "#2 into #11, the near striker dropping to feet.",
+    "#11 sets into #8, who has stepped forward into the space the carry created.",
+    "#8 switches the point all the way to #3 on the far touchline.",
+    "#3 inside to #10 in the left half-space.",
+    "#10 slides it through for #9 running the channel.",
+    "#9 finishes across the keeper."],
+  runs:["A — #8 steps forward the moment #4 starts carrying. The carry pulls a midfielder out; #8 takes the space he leaves.",
+    "B — #9 runs the channel as the ball travels into #10. Not before — he times himself offside.",
+    "C — #11 spins forward after his lay-off and pins the near centre-back so he cannot slide across.",
+    "D — #2 pushes on after his pass to hold the far side of the back line."],
+  off:["The keeper steps up and across as the back three splits — he is the extra passing option if the carry is blocked.","#6 and #5 step up behind the carry. If nobody presses the spare man, everybody behind the ball moves up with him.","#4 recovers into the back line once he has released it. A carrying centre-back still has to get home.","#7 pushes on after his pass instead of watching the ball go past him.","#3 and #10 follow their passes into the box as the through ball is played."],
+  points:["Carry until somebody comes. If nobody comes, keep going — walk it into their half if they let you.",
+    "The moment a midfielder steps to #4, the man he left is free. That is pass ⑤.",
+    "#11 receives to feet with a defender on his back; #9 stays on the last shoulder. Never both short.",
+    "Pass ⑨ is the reward for having circulated all the way round — by then the block is a man short on the far side.",
+    "#9 runs the channel between the full-back and the centre-back, never straight at a defender.",
+    "Both wing-backs high and wide before the carry starts, not as it happens."],
+  progs:["Unopposed, then two live strikers pressing the back three.",
+    "Add two screening midfielders so the pocket has to be found.",
+    "Condition: if #7 is not on, #4 must carry over halfway before releasing.",
+    "Live 10v8 with the defenders countering to two goals on halfway."],
+  key:"#4 carries a minimum of 15 yards before he passes, and all eleven touch it before the shot.",
+  anim:{r:[[4,7],[10,11],[8,11],[7,11],[2,6],[3,7],[3,8],[6,10],[11,12],[7,11],[11,12]]},
+  items:[
+    ["mate",60,340,{t:"1"}],["mate",175,215,{t:"6"}],["mate",165,340,{t:"5"}],["mate",175,465,{t:"4"}],
+    ["mate",390,40,{t:"3"}],["mate",560,180,{t:"10"}],["mate",400,350,{t:"8"}],["mate",460,470,{t:"7"}],
+    ["mate",470,640,{t:"2"}],["mate",700,470,{t:"11"}],["mate",720,250,{t:"9"}],
+    ["opp",300,280],["opp",300,400],["opp",600,240],["opp",620,470],["opp",860,290],["opp",880,430],
+    ["ball",78,352],
+    ["pass",78,346,182,228,{n:"1"}],["pass",176,232,170,326,{n:"2"}],
+    ["pass",170,356,180,452,{n:"3"}],["carry",188,458,348,470,{n:"4"}],
+    ["pass",356,468,452,472,{n:"5"}],["pass",470,480,462,624,{n:"6"}],
+    ["pass",482,632,692,486,{n:"7"}],["pass",694,458,614,428,{n:"8"}],
+    ["pass",600,410,396,58,{n:"9"}],["pass",404,52,548,166,{n:"10"}],
+    ["pass",570,186,884,176,{n:"11"}],["shot",900,184,1036,320,{n:"12"}],
+    ["run",406,356,600,420,{n:"A"}],["run",726,256,900,180,{n:"B"}],
+    ["run",700,452,842,392,{n:"C"}],["run",478,634,780,620,{n:"D"}],
+    ["run",72,346,96,258,{sup:true,w:3}],["run",182,222,266,250,{sup:true,w:3}],
+    ["run",172,346,262,352,{sup:true,w:3}],["run",354,476,300,540,{sup:true,w:3}],
+    ["run",398,46,470,110,{sup:true,w:3}],["run",466,476,560,520,{sup:true,w:3}],
+    ["run",566,186,700,150,{sup:true,w:3}],
+    ["text",300,600,{t:"nobody presses the spare man — so make him a midfielder"}]
+  ]
+},
+
+/* ===================== 4-3-3 ===================== */
+{
+  id:"n1", name:"1 · Switch and Isolate", cat:"Automations · 4-3-3", dur:"15 min", all11:true,
+  players:"All 10 outfield + GK", area:"Full pitch", view:"full",
+  setup:"A 4-3-3 puts two wingers on the touchlines, which means one of them is always in a 1v1 you can create on purpose. Build down one side through every player in the shape to commit the block, then find the other winger with room to run at his full-back.",
+  seq:["GK into #4.",
+    "#4 across to #5.",
+    "#5 into #8, who receives on the half-turn.",
+    "#8 out to #3 pushing on.",
+    "#3 into #11's feet on the left touchline. Bait — the block commits.",
+    "#11 sets all the way back to #10.",
+    "#10 square to #6 on the right side of the midfield three.",
+    "THE SWITCH. #6 drives it to #7 on the far touchline. Flat and one line.",
+    "#7 attacks the full-back's inside shoulder and carries.",
+    "#7 releases #2 outside him.",
+    "#2 takes it to the byline.",
+    "Cut-back to the penalty spot."],
+  runs:["A — #2 pushes on the moment the ball comes back inside off #11. He has to be level with #7 before the switch lands.",
+    "B — #9 pulls the near-post defender, then checks back to the spot and finishes.",
+    "C — #11 comes off the far touchline and travels 40 yards to the back post.",
+    "D — #8 arrives late at the top of the box."],
+  off:["The keeper pushes up and across as the back four splits.","#4 and #5 step up behind the ball as it goes past them. The block only shifts if the whole shape moves.","#3 tucks inside once the ball has gone right — third centre-back, rest defence.","#10 slides across behind the ball after his pass.","#6 follows his switch up the pitch. He played it, so he goes with it."],
+  points:["#7 receives facing forward. If he has to control and turn, the full-back has recovered and it is a 1v1 he cannot win.",
+    "The bait has to be genuine. A lazy ball left means nothing to switch away from.",
+    "One winger on each touchline at all times. If both come inside, blow it dead.",
+    "#7's first touch goes at the defender, not sideways. Attack the front foot, then release #2.",
+    "Reward #11's 40-yard back-post run even when the ball does not arrive.",
+    "Everyone touches it, including the keeper. That is what makes the block shift far enough to be worth switching."],
+  progs:["Unopposed and timed.",
+    "Passive mid-block of six.",
+    "Live full-back on #7 so the 1v1 is real.",
+    "Free: the coach calls which side is the bait as the keeper releases."],
+  key:"All eleven touch it, and the ball reaches the far winger within ten seconds of leaving the keeper.",
+  anim:{r:[[6,10],[10,12],[8,12],[7,12],[2,6],[3,7],[4,8],[6,10],[8,11],[9,12]]},
+  items:[
+    ["mate",60,340,{t:"1"}],["mate",165,255,{t:"5"}],["mate",165,425,{t:"4"}],
+    ["mate",260,120,{t:"3"}],["mate",430,600,{t:"2"}],
+    ["mate",420,240,{t:"8"}],["mate",380,345,{t:"10"}],["mate",430,430,{t:"6"}],
+    ["mate",620,35,{t:"11"}],["mate",790,340,{t:"9"}],["mate",700,655,{t:"7"}],
+    ["ball",78,352],
+    ["pass",78,346,168,412,{n:"1"}],["pass",170,406,172,268,{n:"2"}],
+    ["pass",180,262,408,244,{n:"3"}],["pass",410,228,268,134,{n:"4"}],
+    ["pass",272,110,610,48,{n:"5"}],["pass",628,46,390,332,{n:"6"}],
+    ["pass",392,356,430,428,{n:"7"}],["pass",442,444,688,644,{n:"8"}],
+    ["carry",704,648,830,600,{n:"9"}],["pass",838,596,972,632,{n:"10"}],
+    ["carry",988,636,1032,644,{n:"11"}],["curve",1034,640,930,352,{n:"12",bend:-30}],
+    ["run",438,608,952,628,{n:"A"}],
+    ["curve",796,336,928,348,{n:"B",bend:-40,st:"run"}],
+    ["run",628,42,966,236,{n:"C"}],["run",428,246,872,392,{n:"D"}],
+    ["run",72,346,96,264,{sup:true,w:3}],["run",172,418,258,440,{sup:true,w:3}],
+    ["run",172,262,258,300,{sup:true,w:3}],["run",266,126,340,220,{sup:true,w:3}],
+    ["run",386,351,490,390,{sup:true,w:3}],["run",436,436,560,490,{sup:true,w:3}],
+    ["text",220,630,{t:"bait one touchline, isolate the other"}]
+  ]
+},
+{
+  id:"n2", name:"2 · Third Man to the 9", cat:"Automations · 4-3-3", dur:"12 min",
+  players:"7 outfield + GK + 6 mannequins", area:"Attacking half", view:"attack",
+  setup:"The close-up pattern for the front three. Against a compact block the central route looks shut. Up–back–through opens it in three touches: forward to draw them onto the striker, back to a man already facing goal, then through the gap that created. Four mannequins as the back four, two as screeners.",
+  seq:["#5 plays firm into #9's feet.",
+    "#9 sets first time to #10, into his back foot and away from pressure.",
+    "#10 plays the third-man ball into the channel, first time.",
+    "#7 carries to the byline.",
+    "Cut-back to the penalty spot."],
+  runs:["A — #9 checks 8 to 10 yards short onto the screener's blind side before the ball is played.",
+    "B — #7 leaves the touchline as the lay-off is travelling and runs the diagonal in behind.",
+    "C — #9 spins off his own lay-off and attacks the near post.",
+    "D — #11 tucks in from the far touchline to the back post.",
+    "E — #8 arrives at the top of the box. He is the target of the cut-back."],
+  off:["#5 steps up behind his own pass into the striker.","#10 follows the through ball rather than admiring it.","#2 pushes on underneath #7 as the ball goes in behind — the recycle option if the cut-back is shut."],
+  points:["The 'up' pass is firm and to the correct foot. A soft one invites the screener to arrive with it.",
+    "The lay-off is the drill. Two or three yards away from pressure, into #10's stride.",
+    "#10's through ball is first time. A touch to control shuts the window.",
+    "#7 holds his width until the lay-off, then goes. Holding still is the hard part — coach it explicitly.",
+    "Somebody must take the near post, somebody the back post, somebody the top of the box. Never two to the same place."],
+  progs:["Mannequins only, two touches maximum.",
+    "One live screener who may intercept.",
+    "Live back four defending the box.",
+    "Condition: if the through ball is not on, the ball must reach the full-back within two passes."],
+  key:"Two touches. Six-second shot clock from the first pass.",
+  anim:{r:[[0,1],[2,3],[3,5],[3,5],[2,5],[2,5],[3,5],[3,5]]},
+  items:[
+    ["mate",545,340,{t:"5"}],["mate",640,300,{t:"10"}],["mate",760,430,{t:"8"}],
+    ["mate",880,336,{t:"9"}],["mate",660,655,{t:"7"}],["mate",660,25,{t:"11"}],["mate",600,560,{t:"2"}],
+    ["mann",900,180],["mann",900,290],["mann",900,400],["mann",900,510],["mann",770,268],["mann",770,420],
+    ["ball",562,352],
+    ["pass",562,344,802,340,{n:"1"}],["pass",798,332,656,310,{n:"2"}],
+    ["pass",648,296,946,548,{n:"3"}],["carry",962,558,1034,600,{n:"4"}],
+    ["curve",1032,596,930,352,{n:"5",bend:26}],
+    ["run",886,342,806,342,{n:"A"}],["run",666,644,944,540,{n:"B"}],
+    ["run",812,336,974,430,{n:"C"}],["run",666,36,968,240,{n:"D"}],
+    ["run",766,436,900,392,{n:"E"}],
+    ["run",562,352,620,400,{sup:true,w:3}],["run",646,306,720,240,{sup:true,w:3}],
+    ["run",606,566,720,600,{sup:true,w:3}],
+    ["text",700,120,{t:"up · back · through — and the runner comes from the touchline"}]
+  ]
+},
+{
+  id:"n3", name:"3 · Underlap and Cut-Back", cat:"Automations · 4-3-3", dur:"15 min", all11:true,
+  players:"All 10 outfield + GK vs 6", area:"Full pitch", view:"full",
+  setup:"When the winger holds the touchline, the space that opens is inside him, not outside. So the full-back goes underneath rather than around. Build the whole way round the shape first — right side, back through the middle, out to the left — so that when it comes back to the right the block has stopped watching #2.",
+  seq:["GK into #4.",
+    "#4 out to #6 on the right of the midfield three.",
+    "#6 back inside to #10.",
+    "#10 up to #8.",
+    "#8 switches back to #5.",
+    "#5 out to #3.",
+    "#3 into #11 on the left touchline. Bait — the block slides across.",
+    "#11 hits the diagonal into #9's feet.",
+    "#9 turns it round the corner to #7, isolated on the far touchline.",
+    "#7 takes an outside touch to hold the full-back wide and open the inside lane.",
+    "#7 releases #2 underlapping inside him.",
+    "#2 cuts it back from the half-space, 8 to 10 yards off the byline."],
+  runs:["A — #2 underlaps the instant #7's outside touch is taken, into the gap between full-back and centre-back.",
+    "B — #9 attacks the near post after his lay-off and drags the far centre-back with him.",
+    "C — #11 leaves the far touchline as soon as he has played it and arrives at the back post.",
+    "D — #8 arrives at the edge of the D. He is the intended target of the cut-back."],
+  off:["The keeper shifts across and steps up as the ball is worked around the back.","#4 steps up behind the ball; #6 pushes on after his pass rather than standing off it.","#10 travels back across with the ball when it is recycled to the left — the pivot always sits behind it.","#5 steps up as the ball goes wide left.","#3 tucks inside once the ball is switched right and becomes the third centre-back."],
+  points:["#7's touch must go outside. Touch it inside and there is no lane to underlap into.",
+    "The underlap beats the overlap here because it comes from the blind side and finishes closer to goal.",
+    "Cut back, do not cross. From the half-space the ball goes backwards across the six-yard box.",
+    "#8's arrival is the point of the whole pattern — the cut-back is for him, not for the strikers.",
+    "If the underlap is shut, #7 goes outside on his own. The pattern gives him two options, not one.",
+    "Eleven touches before the shot. If somebody is skipped, the block never had to move."],
+  progs:["Unopposed, then a passive six.",
+    "Live full-back so the outside touch has to be real.",
+    "Add a recovering centre-back to make the cut-back angle tighter.",
+    "Alternate underlap and overlap on the coach's call as the ball leaves #9."],
+  key:"The cut-back is played from inside the width of the box, never from the byline.",
+  anim:{r:[[9,11],[10,12],[8,12],[8,12],[3,7],[3,8],[4,9],[5,8],[7,10],[8,12]]},
+  items:[
+    ["mate",60,340,{t:"1"}],["mate",165,255,{t:"5"}],["mate",165,425,{t:"4"}],
+    ["mate",250,110,{t:"3"}],["mate",620,620,{t:"2"}],["mate",430,450,{t:"6"}],
+    ["mate",380,340,{t:"10"}],["mate",420,230,{t:"8"}],["mate",600,35,{t:"11"}],
+    ["mate",780,380,{t:"9"}],["mate",700,655,{t:"7"}],
+    ["opp",880,140],["opp",880,320],["opp",880,460],["opp",880,600],["opp",640,240],["opp",640,440],
+    ["ball",78,352],
+    ["pass",78,346,168,412,{n:"1"}],["pass",176,432,420,438,{n:"2"}],
+    ["pass",424,436,390,354,{n:"3"}],["pass",386,326,412,244,{n:"4"}],
+    ["pass",410,224,178,262,{n:"5"}],["pass",172,240,256,124,{n:"6"}],
+    ["pass",262,102,590,46,{n:"7"}],["pass",612,44,768,366,{n:"8"}],
+    ["pass",772,394,688,640,{n:"9"}],["carry",706,648,828,652,{n:"10"}],
+    ["pass",834,646,922,556,{n:"11"}],["curve",930,548,918,352,{n:"12",bend:18}],
+    ["run",628,628,902,564,{n:"A"}],["run",786,386,982,470,{n:"B"}],
+    ["run",608,44,960,240,{n:"C"}],["run",426,236,914,348,{n:"D"}],
+    ["run",72,346,96,262,{sup:true,w:3}],["run",172,432,258,450,{sup:true,w:3}],
+    ["run",436,444,540,480,{sup:true,w:3}],["run",386,334,310,290,{sup:true,w:3}],
+    ["run",172,262,250,290,{sup:true,w:3}],["run",256,116,340,200,{sup:true,w:3}],
+    ["text",300,600,{t:"the space is inside the winger, so go underneath him"}]
+  ]
+},
+{
+  id:"n4", name:"4 · Pin and Spin", cat:"Automations · 4-3-3", dur:"15 min", all11:true,
+  players:"All 10 outfield + GK vs 6", area:"Full pitch", view:"full",
+  setup:"A front three pins a back four by simply standing in the right places — a winger on each touchline and a striker between the centre-backs. Circulate through everybody until the back four has stopped moving, then the striker drops, the hole appears, and the far winger attacks it.",
+  seq:["GK into #5.",
+    "#5 across to #4.",
+    "#4 out to #6.",
+    "#6 out to #2 on the right.",
+    "#2 up the line into #7, who is pinning the far full-back.",
+    "#7 back inside to #10.",
+    "#10 up to #8.",
+    "#8 out to #3 on the left.",
+    "#3 up the line to #11.",
+    "#11 into #9's feet as he drops off the back line.",
+    "#9 flicks it first time round the corner into the space he has just left.",
+    "#11 runs onto it and finishes."],
+  runs:["A — #9 drops hard, 12 to 15 yards. If a centre-back follows, the hole is behind him; if nobody follows, #9 turns.",
+    "B — #11 goes the instant he has played it, across the centre-back's blind side and into the space #9 vacated.",
+    "C — #7 holds width on the far side all the way through, then attacks the back post.",
+    "D — #10 spins forward and arrives at the penalty spot for the cut-back if the flick is shut."],
+  off:["The keeper pushes up and across as the back four splits.","#5 and #4 step up behind the ball as it is worked out. The pin only works if the shape behind it comes with them.","#6 and #2 push on after their passes — the whole right side moves up before the ball comes back inside.","#8 slides across behind the ball once the switch is played, ready for the second ball off the flick."],
+  points:["The front three do nothing for ten seconds except stand in the right lanes. That is the work.",
+    "#9's drop is sharp and side-on so he can flick either way.",
+    "The flick is one contact. If he needs two, he should have set it back and turned instead.",
+    "#11 plays it and goes — a run from outside the centre-back's eyeline is far harder to track than one through the middle.",
+    "Nobody follows the ball. Three lanes stay occupied all the way through the pattern.",
+    "All eleven touch it on the way round. That circulation is what freezes the back four."],
+  progs:["Unopposed, then a passive six.",
+    "One centre-back live and permitted to follow #9.",
+    "Live back four, attackers on two touches.",
+    "Free build-up, but the finish must come from the pin-and-spin picture."],
+  key:"From the pass into #9 to the shot: three touches maximum for the whole team.",
+  anim:{r:[[9,10],[10,11],[9,12],[8,12],[3,8],[2,6],[3,7],[5,9],[6,10],[9,12],[10,12]]},
+  items:[
+    ["mate",60,340,{t:"1"}],["mate",165,255,{t:"5"}],["mate",165,425,{t:"4"}],
+    ["mate",270,110,{t:"3"}],["mate",300,570,{t:"2"}],["mate",430,450,{t:"6"}],
+    ["mate",400,340,{t:"10"}],["mate",420,230,{t:"8"}],["mate",640,655,{t:"7"}],
+    ["mate",680,45,{t:"11"}],["mate",860,280,{t:"9"}],
+    ["opp",900,160],["opp",900,300],["opp",900,440],["opp",900,580],["opp",560,270],["opp",560,410],
+    ["ball",78,352],
+    ["pass",78,346,172,268,{n:"1"}],["pass",170,272,170,412,{n:"2"}],
+    ["pass",176,436,420,438,{n:"3"}],["pass",426,462,306,556,{n:"4"}],
+    ["pass",312,578,628,646,{n:"5"}],["pass",632,642,412,352,{n:"6"}],
+    ["pass",398,322,414,244,{n:"7"}],["pass",410,224,278,124,{n:"8"}],
+    ["pass",282,100,670,54,{n:"9"}],["pass",690,58,740,318,{n:"10"}],
+    ["pass",752,326,914,208,{n:"11"}],["shot",904,200,1038,300,{n:"12"}],
+    ["run",866,286,748,330,{n:"A"}],["run",688,52,898,196,{n:"B"}],
+    ["run",646,650,978,470,{n:"C"}],["run",406,346,900,368,{n:"D"}],
+    ["run",72,346,96,262,{sup:true,w:3}],["run",172,262,258,290,{sup:true,w:3}],
+    ["run",172,432,256,452,{sup:true,w:3}],["run",436,444,540,490,{sup:true,w:3}],
+    ["run",306,576,430,620,{sup:true,w:3}],["run",426,236,520,290,{sup:true,w:3}],
+    ["run",276,116,360,190,{sup:true,w:3}],
+    ["text",200,660,{t:"pin the back four, then pull one of them out of it"}]
+  ]
+},
+
+/* ===================== 4-4-2 ===================== */
+{
+  id:"o1", name:"1 · Split and Release", cat:"Automations · 4-4-2", dur:"15 min", all11:true,
+  players:"All 10 outfield + GK vs 3", area:"Full pitch", view:"full",
+  setup:"Two strikers give you something no other shape does: one can come short while the other goes long, and the centre-backs cannot both follow. Work the ball round the whole team first so the back four is flat and settled, then split them.",
+  seq:["GK into #4.",
+    "#4 across to #5.",
+    "#5 out to #3 on the left.",
+    "#3 up the line to #11.",
+    "#11 back inside to #8.",
+    "#8 square to #6.",
+    "#6 out to #2 on the right.",
+    "#2 up the line to #7.",
+    "#7 into #9's feet as he comes short.",
+    "#9 sets first time into #6, who has kept running past him.",
+    "#6 slides it into the far channel for #10.",
+    "#10 finishes across the keeper."],
+  runs:["A — #9 comes short as the ball reaches #7. He is the near forward, and he must be seen to come.",
+    "B — #6 keeps going after his pass and takes the lay-off on the run. Nobody passes and stops.",
+    "C — #10 runs the opposite channel the moment #9 checks. One short, one long, always.",
+    "D — #8 pushes up behind the ball as insurance and as the second-ball option."],
+  off:["The keeper pushes up and across as the back four splits.","#4 and #5 step up behind the ball. Four defenders moving forward together is what squeezes the game up the pitch.","#3 tucks inside once the ball has crossed the pitch.","#11 comes off his touchline after the ball has gone past him and fills in centrally.","#2 pushes on after his pass; #7 follows his pass into the box."],
+  points:["The split is simultaneous. If both strikers come short you have handed the centre-backs an easy afternoon.",
+    "#9 holds it up with his back to goal and sets — his lay-off is a pass, not a clearance.",
+    "The second striker's run is worth making even when the ball never comes. It is what stops the back line stepping up.",
+    "#6 is the man who ends up on the ball in the final third, and he started the move on the halfway line. That is the point.",
+    "Both full-backs stay high on the touchlines the whole way round — the circulation only works if the pitch is wide."],
+  progs:["Unopposed both sides.",
+    "Two live centre-backs who may follow the drop.",
+    "Add a screening midfielder behind #9.",
+    "Live 10v8 with the defenders countering to two goals on halfway."],
+  key:"One striker short, one long, on the same touch — and all eleven touch it before the shot.",
+  anim:{r:[[8,9],[8,10],[8,11],[9,12],[2,6],[3,7],[4,8],[5,9],[6,11],[8,12],[9,12]]},
+  items:[
+    ["mate",60,340,{t:"1"}],["mate",170,255,{t:"5"}],["mate",170,425,{t:"4"}],
+    ["mate",265,120,{t:"3"}],["mate",300,560,{t:"2"}],
+    ["mate",430,270,{t:"8"}],["mate",440,420,{t:"6"}],
+    ["mate",470,40,{t:"11"}],["mate",560,650,{t:"7"}],
+    ["mate",760,420,{t:"9"}],["mate",760,270,{t:"10"}],
+    ["opp",620,350],["opp",860,300],["opp",860,430],
+    ["ball",78,352],
+    ["pass",78,346,172,412,{n:"1"}],["pass",172,406,176,268,{n:"2"}],
+    ["pass",176,242,270,134,{n:"3"}],["pass",278,112,460,50,{n:"4"}],
+    ["pass",478,52,438,256,{n:"5"}],["pass",436,286,436,406,{n:"6"}],
+    ["pass",430,432,310,548,{n:"7"}],["pass",312,572,548,640,{n:"8"}],
+    ["pass",566,644,662,522,{n:"9"}],["pass",668,514,636,448,{n:"10"}],
+    ["pass",628,442,914,198,{n:"11"}],["shot",936,202,1040,300,{n:"12"}],
+    ["run",766,426,670,510,{n:"A"}],["run",436,438,620,440,{n:"B"}],
+    ["run",766,276,930,206,{n:"C"}],["run",436,276,760,330,{n:"D"}],
+    ["run",72,346,96,262,{sup:true,w:3}],["run",176,432,262,452,{sup:true,w:3}],
+    ["run",176,262,262,300,{sup:true,w:3}],["run",272,126,350,210,{sup:true,w:3}],
+    ["run",476,48,580,130,{sup:true,w:3}],["run",306,566,430,600,{sup:true,w:3}],
+    ["run",566,644,700,620,{sup:true,w:3}],
+    ["text",700,120,{t:"one comes short, one goes long — the centre-backs cannot do both"}]
+  ]
+},
+{
+  id:"o2", name:"2 · Wide 2v1", cat:"Automations · 4-4-2", dur:"12 min",
+  players:"6 outfield + GK + 3 mannequins", area:"Attacking half", view:"attack",
+  setup:"The close-up pattern, and the oldest one in the book: the near striker drops into the channel, the winger has the ball, and the full-back overlaps. Two against one down the side, every time the ball goes wide.",
+  seq:["#6 out to #7 on the right.",
+    "#7 into #10, who has dropped into the channel with his back to goal.",
+    "#10 sets round the corner into #2's overlap.",
+    "#2 takes it to the byline.",
+    "Cut-back to the penalty spot."],
+  runs:["A — #10 drops into the channel as the ball travels to #7. He is the wall, not the finisher.",
+    "B — #2 overlaps outside on the release of pass ②.",
+    "C — #9 pulls the near-post defender, then checks back to the spot to finish.",
+    "D — #11 comes off the far touchline to the back post.",
+    "E — #7 comes inside to the top of the D once #2 has gone past him."],
+  off:["#6 pushes up behind the ball as the 2v1 develops. He is the recycle if it is shut and the screen if it is lost."],
+  points:["The set is round the corner and first time. Any turn and the 2v1 has become a 1v2.",
+    "#2 overlaps on the release, not on the set. That second is the whole overlap.",
+    "#9 stays central. With #10 in the channel he is the only man attacking the box.",
+    "Winger inside once the full-back has gone beyond him — he finishes in the box, not on the touchline.",
+    "If the overlap is covered, #10 turns and plays it back inside. Two options, always."],
+  progs:["Unopposed with mannequins.",
+    "Live full-back so the 2v1 is genuinely 2v1.",
+    "Add a recovering midfielder to close the cut-back.",
+    "Mirror it on the left with #11 and #3."],
+  key:"Two touches for #10, and the cross in before the defence has set.",
+  anim:{r:[[0,1],[2,4],[4,5],[2,5],[3,5],[2,5]]},
+  items:[
+    ["mate",545,430,{t:"6"}],["mate",680,640,{t:"7"}],["mate",860,470,{t:"10"}],
+    ["mate",700,596,{t:"2"}],["mate",850,330,{t:"9"}],["mate",660,30,{t:"11"}],
+    ["mann",790,610],["mann",900,300],["mann",900,410],
+    ["ball",562,436],
+    ["pass",562,430,668,632,{n:"1"}],["pass",692,640,792,552,{n:"2"}],
+    ["pass",800,556,942,608,{n:"3"}],["carry",962,616,1030,628,{n:"4"}],
+    ["curve",1028,624,930,352,{n:"5",bend:-28}],
+    ["run",866,476,802,548,{n:"A"}],["run",708,602,938,614,{n:"B"}],
+    ["curve",856,332,926,348,{n:"C",bend:-40,st:"run"}],["run",668,40,966,258,{n:"D"}],
+    ["run",686,634,878,414,{n:"E"}],
+    ["run",556,424,650,470,{sup:true,w:3}],
+    ["text",700,120,{t:"striker into the channel, full-back around him"}]
+  ]
+},
+{
+  id:"o3", name:"3 · The Diagonal and the Second Ball", cat:"Automations · 4-4-2", dur:"15 min", all11:true,
+  players:"All 10 outfield + GK vs 4", area:"Full pitch", view:"full",
+  setup:"Not every ball has to go through the lines. A 4-4-2 with two strikers and two wide midfielders is built to win a long diagonal and feed off the knock-down — but the diagonal only works once you have walked them across the pitch first. Circulate right, back through the middle, out to the left, then switch it in one over the top.",
+  seq:["GK out to #2 on the right.",
+    "#2 back inside to #4.",
+    "#4 square to #6.",
+    "#6 up to #8.",
+    "#8 out to #11 on the left touchline.",
+    "#11 back inside to #5. The block has followed the ball all the way across.",
+    "#5 out to #3.",
+    "THE DIAGONAL. #3 hits it over the top for #7 on the far touchline. Over the full-back, not at him.",
+    "#7 heads or cushions it inside to #10.",
+    "#10 lays it into the channel for #9.",
+    "#9 finishes."],
+  runs:["A — #7 attacks the flight of the ball, moving toward it. Stand still and it goes over his head.",
+    "B — #9 attacks the drop zone — where the knock-down will land, not where the ball is going.",
+    "C — #10 slides underneath as the second-ball collector.",
+    "D — #8 pushes up for the third ball. Somebody must be there when it breaks loose."],
+  off:["The keeper shifts across with the ball as it is worked around the back four.","#2 pushes on after his pass; #4 steps up behind the ball.","#6 travels back across with the ball when it goes left. The midfield sits behind the ball, not on it.","#11 comes inside once he has played it — with the ball switching, he becomes a second striker.","#5 and #3 step up as the diagonal is struck. Everybody goes forward while it is in the air, or there is nobody for the second ball."],
+  points:["Weight and height matter more than distance. The ball has to be winnable — over the full-back's head, not into the keeper's arms.",
+    "Three players react to the diagonal: one attacks it, one attacks the drop, one collects the second ball.",
+    "Everybody moves forward as it travels. A long ball with a static midfield is just possession given away.",
+    "Coach the knock-down, not the header — cushion it down and inside, do not try to flick it on.",
+    "The seven passes before it are not filler. They are what puts the far full-back in a position to be beaten."],
+  progs:["Unopposed — get the three reactions automatic first.",
+    "Live full-back contesting the flight.",
+    "Add two live midfielders to fight for the second ball.",
+    "Condition in a game: the ball must cross the pitch twice before any diagonal."],
+  key:"Seven touches across the pitch, then three players moving before the diagonal lands.",
+  anim:{r:[[8,8],[8,10],[8,9],[8,11],[2,5],[3,7],[4,8],[5,9],[7,10],[8,11],[9,11]]},
+  items:[
+    ["mate",60,340,{t:"1"}],["mate",170,255,{t:"5"}],["mate",170,425,{t:"4"}],
+    ["mate",270,80,{t:"3"}],["mate",250,560,{t:"2"}],
+    ["mate",430,45,{t:"11"}],["mate",420,270,{t:"8"}],["mate",430,430,{t:"6"}],
+    ["mate",520,380,{t:"10"}],["mate",700,655,{t:"7"}],["mate",700,340,{t:"9"}],
+    ["opp",640,630],["opp",860,200],["opp",860,340],["opp",860,480],
+    ["ball",78,352],
+    ["pass",78,352,244,546,{n:"1"}],["pass",244,570,178,438,{n:"2"}],
+    ["pass",176,440,420,418,{n:"3"}],["pass",426,414,424,286,{n:"4"}],
+    ["pass",416,254,424,60,{n:"5"}],["pass",426,58,184,250,{n:"6"}],
+    ["pass",178,242,266,94,{n:"7"}],["curve",278,88,598,584,{n:"8",bend:-60}],
+    ["pass",606,576,626,446,{n:"9"}],["pass",628,422,864,294,{n:"10"}],
+    ["shot",886,296,1038,326,{n:"11"}],
+    ["run",706,648,606,590,{n:"A"}],["run",706,346,880,300,{n:"B"}],
+    ["run",526,386,620,436,{n:"C"}],["run",426,276,760,380,{n:"D"}],
+    ["run",72,352,96,430,{sup:true,w:3}],["run",256,566,370,600,{sup:true,w:3}],
+    ["run",176,432,262,450,{sup:true,w:3}],["run",436,424,350,460,{sup:true,w:3}],
+    ["run",436,52,540,120,{sup:true,w:3}],["run",176,248,262,290,{sup:true,w:3}],
+    ["run",276,86,380,150,{sup:true,w:3}],
+    ["text",260,655,{t:"one attacks the flight, one the drop, one the second ball"}]
+  ]
+},
+{
+  id:"o4", name:"4 · Switch and Cross for the Two", cat:"Automations · 4-4-2", dur:"12 min", all11:true,
+  players:"All 10 outfield + GK vs 5", area:"Full pitch", view:"full",
+  setup:"A flat midfield four can move a ball across a pitch faster than a back four can slide. Start it at the keeper, work it up the left, back across the middle and out to the right, and get the cross in early — because the one thing this shape always has is two men in the box.",
+  seq:["GK into #5.",
+    "#5 across to #4.",
+    "#4 out to #6.",
+    "#6 back inside to #8.",
+    "#8 out to #3 pushing on.",
+    "#3 up the line to #11.",
+    "#11 inside to #9, who has dropped off the back line into the left half-space.",
+    "#9 sets first time into #10.",
+    "THE SWITCH. #10 drives it across to #2, already high on the right.",
+    "#2 first time to #7.",
+    "#7 crosses first time — no touch, no invitation to the defence to set."],
+  runs:["A — #9 drops 15 yards into the pocket as the ball goes up the left touchline. Dropping is what pulls the back four's shape apart.",
+    "B — #10 plays the switch and goes. He takes the penalty spot, and he is the target of the cross.",
+    "C — #9 spins forward off his own lay-off and attacks the near post.",
+    "D — #11 comes all the way across to the back post. Forty yards, every rep.",
+    "E — #8 holds the top of the box for the cut-out."],
+  off:["The keeper pushes up and across as the back four splits.","#5 and #4 step up behind the ball as it works its way across the four.","#6 slides across behind the ball rather than going with it — he is the rest defence for the counter.","#3 tucks inside once the ball has switched right.","#2 pushes on after feeding #7 so there is a body for the cut-back at the near edge."],
+  points:["Ball speed across the four is what beats the slide. Two touches maximum in the middle.",
+    "The cross is first time. Every touch #7 takes lets another defender into the box.",
+    "Near post, penalty spot, back post, edge of the box. Four distances — that is what a cross has to find.",
+    "#9 drops, sets, and then re-attacks the near post. He does not stand still admiring the lay-off.",
+    "#10 plays the switch and then sprints 35 yards to finish it. If he watches his own pass, the cross has no target.",
+    "#6 does not go beyond the ball. He is the rest defence for the counter."],
+  progs:["Unopposed and timed — under twelve seconds from the keeper to the cross.",
+    "Passive back four in the box.",
+    "Live defenders, attackers restricted to two touches.",
+    "Score double for a goal from a first-time cross."],
+  key:"All eleven touch it, and the ball is crossed within two seconds of reaching the right touchline.",
+  anim:{r:[[6,7],[9,11],[9,11],[9,11],[8,11],[2,6],[2,6],[3,7],[5,9],[7,11],[10,11],[9,10]]},
+  items:[
+    ["mate",60,340,{t:"1"}],["mate",170,255,{t:"5"}],["mate",170,425,{t:"4"}],
+    ["mate",300,110,{t:"3"}],["mate",430,590,{t:"2"}],
+    ["mate",430,260,{t:"8"}],["mate",440,410,{t:"6"}],
+    ["mate",500,40,{t:"11"}],["mate",620,655,{t:"7"}],
+    ["mate",760,400,{t:"9"}],["mate",620,230,{t:"10"}],
+    ["opp",600,130],["opp",520,340],["opp",560,530],["opp",880,270],["opp",880,430],
+    ["ball",78,352],
+    ["pass",78,346,176,268,{n:"1"}],["pass",172,272,174,412,{n:"2"}],
+    ["pass",178,436,430,396,{n:"3"}],["pass",434,394,426,276,{n:"4"}],
+    ["pass",416,250,308,124,{n:"5"}],["pass",310,102,490,52,{n:"6"}],
+    ["pass",510,50,642,300,{n:"7"}],["pass",656,304,628,242,{n:"8"}],
+    ["pass",614,244,432,574,{n:"9"}],["pass",444,596,690,640,{n:"10"}],
+    ["curve",706,644,930,352,{n:"11",bend:-34}],
+    ["run",766,406,650,310,{n:"A"}],["run",620,238,926,348,{n:"B"}],
+    ["run",656,304,984,462,{n:"C"}],["run",508,48,966,232,{n:"D"}],
+    ["run",436,266,880,392,{n:"E"}],
+    ["run",72,346,96,262,{sup:true,w:3}],["run",176,262,262,296,{sup:true,w:3}],
+    ["run",176,432,262,452,{sup:true,w:3}],["run",446,416,540,460,{sup:true,w:3}],
+    ["run",306,116,390,200,{sup:true,w:3}],["run",438,596,560,630,{sup:true,w:3}],
+    ["run",626,648,694,644,{sup:true,w:3}],
+    ["text",250,655,{t:"across the four, wide early, first-time cross"}]
+  ]
+}
+);
+
+/* ============================================================
    CORE — state, pitch, rendering
    ============================================================ */
 const SVGNS = "http://www.w3.org/2000/svg";
@@ -1444,7 +2123,7 @@ const nid = () => "s" + (uid++);
 
 const S = {
   tab:"lineup", tool:"select", color:null, width:5,
-  sel:null, drag:null, k:1, rot:false, rotAuto:true, phone:false,
+  sel:null, drag:null, k:1, rot:false, rotAuto:true, phone:false, seenHint:false, editIdx:null,
   gs:1,                          // glyph scale — bumped up on phones
   zoom:{s:1, x:0, y:0},          // pinch zoom, offset in view units
   lineup:{
@@ -1615,7 +2294,7 @@ function playerGlyph(g0,x,y,fill,stroke,label,sub,txtColor){
 function renderShape(s, layer){
   const k=S.k;
   const g = el("g",{"data-sid":s.id, style:"cursor:pointer"}, layer);
-  if(s.o&&s.o.faint) g.setAttribute("opacity",".42");
+  if(s.o&&(s.o.faint||s.o.sup)) g.setAttribute("opacity", s.o.sup ? ".5" : ".42");
   const col = s.c || "#ffffff";
   const w   = (s.w||S.width)*k;
   const P   = s.p||[];
@@ -1635,7 +2314,8 @@ function renderShape(s, layer){
     case "line": stroke(`M${a.x},${a.y} L${b.x},${b.y}`, col, w); break;
     case "pass": stroke(`M${a.x},${a.y} L${b.x},${b.y}`, s.c||C.pass, w, null, true);
                  arrowBadge(g,s,a.x,a.y,b.x,b.y,s.c||C.pass); break;
-    case "run":  stroke(`M${a.x},${a.y} L${b.x},${b.y}`, s.c||C.run, w, `${9*k} ${7*k}`, true);
+    case "run":  stroke(`M${a.x},${a.y} L${b.x},${b.y}`, s.c||C.run, w,
+                   (s.o&&s.o.sup)?`${3.5*k} ${6*k}`:`${9*k} ${7*k}`, true);
                  arrowBadge(g,s,a.x,a.y,b.x,b.y,s.c||C.run); break;
     case "shot": stroke(`M${a.x},${a.y} L${b.x},${b.y}`, s.c||C.shot, w*1.5, null, true);
                  arrowBadge(g,s,a.x,a.y,b.x,b.y,s.c||C.shot); break;
@@ -1732,6 +2412,9 @@ function renderPlayers(){
     let sub=null;
     if(L.showNames && p.name) sub=p.name;
     else if(L.showPos) sub=p.pos;
+    if(S.editIdx===i)
+      el("circle",{cx:p.x,cy:p.y,r:31*k,fill:"none",stroke:"#37c86b","stroke-width":3.4*k,
+        "stroke-dasharray":`${9*k} ${6*k}`,"pointer-events":"none"},g);
     playerGlyph(g,p.x,p.y, L.teamColor, S.swapFrom!==null?"#37c86b":"#ffffff",
       L.showNums?p.num:"", sub);
     if(L.showPos && L.showNames && p.name){
@@ -1858,7 +2541,7 @@ function itemToShape(it){
   if(t==="zone"){ p=[{x:rest[0],y:rest[1]},{x:rest[0]+rest[2],y:rest[1]+rest[3]}]; }
   else if(TWO_PT.has(t)){ p=[{x:rest[0],y:rest[1]},{x:rest[2],y:rest[3]}]; }
   else { p=[{x:rest[0],y:rest[1]}]; }
-  return {id:nid(), t, p, o, c:(o&&o.c)||null, w:5};
+  return {id:nid(), t, p, o, c:(o&&o.c)||null, w:(o&&o.w)||5};
 }
 function loadDrill(d){
   const D=S.drills;
@@ -1910,6 +2593,8 @@ const TOOLS = [
    ["cone","Cone"],["disc","Flat disc"],["ball","Ball"],["goal","Mini goal"],["coach","Coach"]],
   [["eraser","Eraser  (E)"]]
 ];
+const CAT_ORDER=["Automations · 4-2-3-1","Automations · 3-5-2","Automations · 4-3-3",
+  "Automations · 4-4-2","Warm-Up","Rondos","Passing","Footwork","Duels","Expanded Play"];
 const KEYS = {v:"select",p:"pen",s:"pass",r:"run",d:"carry",c:"curve",t:"text",e:"eraser",l:"line",z:"zone"};
 const PLACE = new Set(["cone","disc","ball","goal","mann","mate","opp","neut","coach"]);
 const DRAGT = new Set(["line","pass","run","shot","carry","curve","rect","ellipse","zone"]);
@@ -2055,7 +2740,8 @@ svg.addEventListener("pointerdown", e=>{
       const idx=+tk.dataset.pid;
       if(S.swapFrom!==null){ doSwap(idx); return; }
       pushHist();
-      dragInfo={kind:"player", idx, off:{x:p.x-S.lineup.players[idx].x, y:p.y-S.lineup.players[idx].y}};
+      dragInfo={kind:"player", idx, sx:e.clientX, sy:e.clientY,
+        off:{x:p.x-S.lineup.players[idx].x, y:p.y-S.lineup.players[idx].y}};
       S.sel=null; renderHandles(); return;
     }
     const sg=e.target.closest("[data-sid]");
@@ -2129,7 +2815,15 @@ svg.addEventListener("pointerup", e=>{
   ptrs.delete(e.pointerId);
   if(pinch){ if(ptrs.size<2){ pinch=null; } return; }
   if(pan){ pan=null; return; }
-  if(dragInfo){ dragInfo=null; render(); updateStatus(); return; }
+  if(dragInfo){
+    const d=dragInfo; dragInfo=null; render(); updateStatus();
+    // a tap rather than a drag opens the player editor, and undoes nothing
+    if(d.kind==="player" && Math.hypot(e.clientX-d.sx, e.clientY-d.sy)<5){
+      S.hist[S.tab].u.pop();
+      editPlayer(d.idx);
+    }
+    return;
+  }
   if(!tmp) return;
   const a=tmp.p[0], b=tmp.p[tmp.p.length-1];
   const far=Math.hypot(b.x-a.x,b.y-a.y)>12;
@@ -2294,11 +2988,26 @@ function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;",
    ============================================================ */
 function allDrills(){ return DRILLS.concat(S.drills.custom); }
 function buildCatSelect(){
-  const cats=["All categories", ...new Set(allDrills().map(d=>d.cat))];
+  const all=[...new Set(allDrills().map(d=>d.cat))];
+  const autos=all.filter(c=>/^Automations/.test(c));
+  const rest =all.filter(c=>!/^Automations/.test(c));
   const sel=$("#drillCat"); const cur=sel.value;
   sel.innerHTML="";
-  cats.forEach(c=>{ const o=document.createElement("option"); o.value=c; o.textContent=c; sel.appendChild(o); });
-  if(cur && cats.includes(cur)) sel.value=cur;
+  const opt=(v,label,parent)=>{ const o=document.createElement("option"); o.value=v; o.textContent=label; parent.appendChild(o); };
+  opt("All categories","All drills",sel);
+  if(autos.length){
+    opt("All automations","All automations",sel);
+    const g=document.createElement("optgroup"); g.label="Automations by formation";
+    autos.forEach(c=> opt(c, c.replace(/^Automations · /,""), g));
+    sel.appendChild(g);
+  }
+  if(rest.length){
+    const g2=document.createElement("optgroup"); g2.label="Session drills";
+    rest.forEach(c=> opt(c, c, g2));
+    sel.appendChild(g2);
+  }
+  const vals=[...sel.querySelectorAll("option")].map(o=>o.value);
+  if(cur && vals.includes(cur)) sel.value=cur;
 }
 function setSeg(k){
   S.seg=k;
@@ -2313,17 +3022,26 @@ function renderDrillList(){
   const cat=$("#drillCat").value;
   const list=$("#drillList"); list.innerHTML="";
   const items=allDrills().filter(d=>{
-    if(cat && cat!=="All categories" && d.cat!==cat) return false;
+    if(cat==="All automations"){ if(!/^Automations/.test(d.cat)) return false; }
+    else if(cat && cat!=="All categories" && d.cat!==cat) return false;
     if(!q) return true;
     return (d.name+" "+d.cat+" "+(d.setup||"")+" "+(d.points||[]).join(" ")).toLowerCase().includes(q);
   });
   if(!items.length){ list.innerHTML='<p class="hint">No drills match that search.</p>'; return; }
+  const rank=c=>{ const i=CAT_ORDER.indexOf(c); return i<0?99:i; };
+  items.sort((a,b)=> rank(a.cat)-rank(b.cat));
+  let lastCat=null;
   items.forEach(d=>{
+    if(d.cat!==lastCat){
+      lastCat=d.cat;
+      const h=document.createElement("div"); h.className="dgroup"; h.textContent=d.cat;
+      list.appendChild(h);
+    }
     const b=document.createElement("button");
     b.className="dcard"+(S.drills.drillId===d.id?" active":"");
     const meta=[d.dur,d.players].filter(Boolean).join(" · ");
     b.innerHTML=`<div class="dn">${esc(d.name)}</div>
-      <div class="dm"><span class="tag${d.custom?" custom":""}">${esc(d.cat)}</span><span>${esc(meta)}</span></div>`;
+      <div class="dm">${d.custom?'<span class="tag custom">yours</span>':""}${d.all11?'<span class="tag all11">all 11 touch</span>':""}<span>${esc(meta)}</span></div>`;
     b.onclick=()=>{
       loadDrill(d); showDrillDetail(d); renderDrillList(); updateStatus();
       if(!S.phone) setSeg("detail");        // on a phone the drawer closes, so stay in the list
@@ -2336,10 +3054,11 @@ function showDrillDetail(d){
   const sec=(title,arr,ol)=> !arr||!arr.length?"":
     `<h4>${title}</h4><${ol?"ol":"ul"}>${arr.map(x=>`<li>${esc(x)}</li>`).join("")}</${ol?"ol":"ul"}>`;
   box.innerHTML=`<h3>${esc(d.name)}</h3>
-    <div class="meta"><span class="tag">${esc(d.cat)}</span><span>${esc([d.dur,d.players,d.area].filter(Boolean).join(" · "))}</span></div>
+    <div class="meta"><span class="tag">${esc(d.cat)}</span>${d.all11?'<span class="tag all11">all 11 touch the ball</span>':""}<span>${esc([d.dur,d.players,d.area].filter(Boolean).join(" · "))}</span></div>
     ${d.setup?`<h4>Set-up</h4><p>${esc(d.setup)}</p>`:""}
     ${sec("Sequence",d.seq,true)}
     ${sec("Runs &amp; keys",d.runs)}
+    ${sec("Off the ball — nobody stands still",d.off)}
     ${sec("Coaching points",d.points)}
     ${sec("Progressions",d.progs,true)}
     ${d.key?`<h4>Key constraint</h4><p>${esc(d.key)}</p>`:""}
@@ -2419,7 +3138,7 @@ loadDrill=function(d){
    FILE / EXPORT
    ============================================================ */
 function stateObj(){
-  return {app:"coach-board", v:1, tab:S.tab, rot:S.rot,
+  return {app:"coach-board", v:1, tab:S.tab, rot:S.rot, seenHint:S.seenHint,
     lineup:S.lineup,
     drills:{view:S.drills.view, shapes:S.drills.shapes, custom:S.drills.custom, drillId:S.drills.drillId}};
 }
@@ -2436,6 +3155,7 @@ function applyState(d){
     S.drills.drillId=d.drills.drillId||null;
   }
   if(typeof d.rot==="boolean"){ S.rot=d.rot; S.rotAuto=false; }
+  if(d.seenHint) S.seenHint=true;
   // ids must stay unique after a load
   let mx=0;
   [...(S.lineup.shapes||[]), ...(S.drills.shapes||[])].forEach(s=>{
@@ -2540,12 +3260,15 @@ function openHelp(){
       <li>Type names and numbers in the sidebar — they appear under each token.</li>
       <li>Every formation comes numbered to the standard convention — 2 right back, 3 left back, 4 and 5 centre backs, 6 holding, 8 central, 10 attacking, 7 and 11 wide, 9 up top. Change any number and the app stops renumbering when you switch shape.</li>
       <li>In a back three the centre-backs take 4, 5 and 6 and the wing-backs take 2 and 3, which is how the numbers are normally shuffled when a team drops to three at the back.</li>
+      <li><b>Paste roster</b> takes a list of names — <b>7 Torres</b>, <b>Torres 7</b> or just <b>Torres</b>, one per line — and fills the whole lineup and bench in one go. Put a line saying <b>Bench</b> where you want the split.</li>
+      <li>Tap or click a player on the pitch to rename him, change his number, or bring someone on from the bench.</li>
       <li><b>Load team preset</b> also fills in each number's job. Hover a row to read it.</li>
       <li>To sub someone: tap the ⇄ on a bench row, then tap the player on the pitch.</li>
     </ul>
     <h4>Drills tab</h4>
     <ul>
       <li>Three panels: <b>Library</b> to find a drill, <b>Drill</b> for its set-up, coaching points and progressions, <b>Build</b> to make your own.</li>
+      <li>The library is sectioned. <b>Automations</b> are grouped by formation — 4-2-3-1, 3-5-2, 4-3-3 and 4-4-2 — and each pattern uses that shape's own shirt numbers, so it maps straight onto the Lineup tab. Everything below them is the session library: warm-ups, rondos, passing, footwork, duels and expanded play.</li>
       <li><b>New drill</b> clears the board so you can draw your own, then <b>Save to library</b> keeps it for this session.</li>
       <li>Save the file to keep your own drills permanently — <b>Open</b> brings them back.</li>
     </ul>
@@ -2582,7 +3305,7 @@ function openHelp(){
     <h4>Saving</h4>
     <p>Nothing is stored in the browser. <b>Save</b> writes a .json file with your lineup, names, drawings and any drills you built; <b>Open</b> loads it back. <b>PNG</b> exports the board as an image and <b>Print</b> gives you a drill card or a team sheet.</p>
     <h4>Where the drills came from</h4>
-    <p>The Automations category is the six-pattern offensive pack for the 4-2-3-1. Everything else — rondos, passing, footwork, duels and expanded play — is the drill library from the JV training plan, with the set-up and coaching points carried over as written. Edit or add to any of it.</p>
+    <p>The 4-2-3-1 automations are your six-pattern offensive pack, carried over as written. The 3-5-2, 4-3-3 and 4-4-2 packs were built to the same template from the standard attacking principles of each shape. Everything below them — rondos, passing, footwork, duels and expanded play — is the drill library from the JV training plan. Edit or add to any of it.</p>
     <p style="color:#93a3b0;font-size:12px">${esc(TEAM_PRESET.note)}</p>
     <p style="color:#93a3b0;font-size:12px">Tip: the pitch is landscape by default. The tall-rectangle button in the toolbar flips it to vertical, attacking upward — the way your team documents draw it, and easier to read on a phone.</p>
     <div class="modal-foot"><button class="btn primary" id="helpClose">Got it</button></div>`;
@@ -2600,6 +3323,7 @@ function switchTab(t){
   $("#panelLineup").classList.toggle("panel-hide", t!=="lineup");
   $("#panelDrills").classList.toggle("panel-hide", t!=="drills");
   render(); updateStatus();
+  if(typeof updateFirstRun==="function") updateFirstRun();
   if(typeof updateDrillBar==="function") updateDrillBar();
 }
 function init(){
@@ -2653,6 +3377,8 @@ function init(){
     const r=new FileReader(); r.onload=()=>openFile(r.result); r.readAsText(f); e.target.value="";
   };
   $("#btnZoomReset").onclick=resetZoom;
+  $("#btnPasteRoster").onclick=openRoster;
+  $("#rosterModal").addEventListener("click", e=>{ if(e.target.id==="rosterModal") closeRoster(); });
 
   render(); updateStatus();
 }
@@ -2719,13 +3445,16 @@ function buildDock(){
 }
 
 /* ---------- tool sheet ---------- */
-let sheetMode="tools", sheetDrill=null;
+let sheetMode="tools", sheetDrill=null, sheetPlayer=null;
 function openSheet(){ sheetMode="tools"; $("#sheetBg").classList.add("open"); refreshSheet(); }
-function closeSheet(){ $("#sheetBg").classList.remove("open"); }
+function closeSheet(){ $("#sheetBg").classList.remove("open");
+  if(S.editIdx!==null){ S.editIdx=null; renderPlayers(); syncHash(); } }
 function refreshSheet(){
   const bg=$("#sheetBg"); if(!bg||!bg.classList.contains("open")) return;
   const s=$("#sheet");
   s.innerHTML='<div class="grab"></div>';
+
+  if(sheetMode==="player" && sheetPlayer!==null){ playerSheet(s, sheetPlayer); return; }
 
   if(sheetMode==="detail" && sheetDrill){
     const d=sheetDrill;
@@ -2733,9 +3462,10 @@ function refreshSheet(){
       `<h4>${t}</h4><${ol?"ol":"ul"}>${a.map(x=>`<li>${esc(x)}</li>`).join("")}</${ol?"ol":"ul"}>`;
     const w=document.createElement("div"); w.className="detail";
     w.innerHTML=`<h3>${esc(d.name)}</h3>
-      <div class="meta"><span class="tag">${esc(d.cat)}</span><span>${esc([d.dur,d.players,d.area].filter(Boolean).join(" · "))}</span></div>
+      <div class="meta"><span class="tag">${esc(d.cat)}</span>${d.all11?'<span class="tag all11">all 11 touch</span>':""}<span>${esc([d.dur,d.players,d.area].filter(Boolean).join(" · "))}</span></div>
       ${d.setup?`<h4>Set-up</h4><p>${esc(d.setup)}</p>`:""}
       ${sec("Sequence",d.seq,true)}${sec("Runs &amp; keys",d.runs)}
+      ${sec("Off the ball — nobody stands still",d.off)}
       ${sec("Coaching points",d.points)}${sec("Progressions",d.progs,true)}
       ${d.key?`<h4>Key constraint</h4><p>${esc(d.key)}</p>`:""}`;
     s.appendChild(w);
@@ -3032,7 +3762,60 @@ function buildPlan(){
   });
 
   const dur=Math.max(ballEnd, ...moves.map(m=>m.start+m.dur), 0.8)+0.55;
-  return {steps, moves, tokens, dur};
+  const b0=steps.length ? {x:steps[0].s.p[0].x, y:steps[0].s.p[0].y} : null;
+  return {steps, moves, tokens, dur, b0, shift: steps.length>=3 && !!b0};
+}
+
+/* ---------- the shape moves as a unit ----------
+   Nobody stands still while the ball is alive. A player with no arrow of his own
+   still shuttles across as the ball is switched and squeezes up behind it — the
+   further up the pitch he is the more he slides, the deeper he is the more he
+   pushes up. Small on purpose: this is shape, not running. */
+const SHIFT_CAP = 24;
+function shiftAt(P, tk, bp){
+  if(!P || !P.shift || !bp || !P.b0 || tk.t!=="mate") return null;
+  const f  = clamp(tk.p[0].x/1050, 0, 1);
+  const sat=(v)=> SHIFT_CAP*Math.tanh(v/SHIFT_CAP);
+  return { x: sat((bp.x-P.b0.x)*(0.17-0.09*f)), y: sat((bp.y-P.b0.y)*(0.10+0.20*f)) };
+}
+/* Where a player is at time t: on his arrow if one is running, otherwise holding
+   his last position and shuffling with the ball. The shuffle fades out just
+   before an arrow starts and back in just after one finishes, so a player never
+   snaps into a run. */
+function tokenPos(P, tk, t){
+  let base={x:tk.p[0].x, y:tk.p[0].y}, lastEnd=-1e9, nextStart=1e9, active=null;
+  P.moves.forEach(m=>{
+    if(m.token!==tk) return;
+    const e=m.start+m.dur;
+    if(t < m.start){ if(m.start<nextStart) nextStart=m.start; return; }
+    if(t < e){ active=m; return; }
+    if(e>=lastEnd){ lastEnd=e; base=m.shape.p[m.shape.p.length-1]; }
+  });
+  if(active){
+    let u=clamp((t-active.start)/active.dur, 0, 1);
+    if(active.ease) u=u*u*(3-2*u);
+    const q=ptOn(active.shape,u);
+    return {x:q.x, y:q.y};
+  }
+  const bp=ballAt(P,t);
+  const sh=shiftAt(P, tk, bp);
+  if(!sh) return {x:base.x, y:base.y};
+  const F=0.5;
+  // and he settles onto his spot as the ball comes to him
+  const near=clamp((Math.hypot(bp.x-base.x, bp.y-base.y)-45)/55, 0, 1);
+  const bl=Math.max(0, Math.min(1, (t-lastEnd)/F, (nextStart-t)/F)) * (near*near*(3-2*near));
+  return {x:base.x+sh.x*bl, y:base.y+sh.y*bl};
+}
+function ballAt(P, t){
+  let bp=null;
+  for(let i=0;i<P.steps.length;i++){
+    const st=P.steps[i];
+    if(t<st.start) break;
+    bp = (t<=st.end) ? ptOn(st.s, (t-st.start)/Math.max(0.001, st.end-st.start)) : st.end_pt;
+    if(t<=st.end) break;
+  }
+  if(!bp && P.steps.length) bp=P.steps[0].s.p[0];
+  return bp;
 }
 function canAnimate(){
   if(S.tab!=="drills" || S.drills.noAnim) return false;   // reference diagrams don't play
@@ -3092,41 +3875,29 @@ function animFrame(){
   if(!P||!refs) return;
   const t=ANIM.t;
 
+  const baseOp = s => (s.o && (s.o.faint || s.o.sup)) ? (s.o.sup ? "0.5" : "0.42") : "1";
   // arrows fade in as their moment arrives
   P.steps.forEach(st=>{
     const g=refs.get(st.s.id); if(!g) return;
-    g.setAttribute("opacity", t>=st.start ? "1" : "0.15");
+    g.setAttribute("opacity", t>=st.start ? baseOp(st.s) : "0.12");
   });
   P.moves.forEach(m=>{
     const g=refs.get(m.shape.id); if(!g) return;
-    if(isRunAct(m.shape)) g.setAttribute("opacity", t>=m.start ? "1" : "0.15");
+    if(isRunAct(m.shape)) g.setAttribute("opacity", t>=m.start ? baseOp(m.shape) : "0.12");
   });
 
+  const bp = ballAt(P, t);
+
   // players
-  const applied=new Map();
-  P.moves.forEach(m=>{
-    if(!m.token || t<m.start) return;
-    let u=clamp((t-m.start)/m.dur, 0, 1);
-    if(m.ease) u=u*u*(3-2*u);            // players accelerate away and slow into the space
-    const now=ptOn(m.shape,u);
-    applied.set(m.token.id, {tx:now.x, ty:now.y});
-  });
   P.tokens.forEach(tk=>{
     const g=refs.get(tk.id); if(!g) return;
-    const a=applied.get(tk.id);
-    if(a) g.setAttribute("transform", `translate(${a.tx-tk.p[0].x},${a.ty-tk.p[0].y})`);
+    const q=tokenPos(P, tk, t);
+    const dx=q.x-tk.p[0].x, dy=q.y-tk.p[0].y;
+    if(dx||dy) g.setAttribute("transform", `translate(${dx},${dy})`);
     else g.removeAttribute("transform");
   });
 
   // the ball
-  let bp=null;
-  for(let i=0;i<P.steps.length;i++){
-    const st=P.steps[i];
-    if(t<st.start) break;
-    bp = (t<=st.end) ? ptOn(st.s, (t-st.start)/Math.max(0.001, st.end-st.start)) : st.end_pt;
-    if(t<=st.end) break;
-  }
-  if(!bp && P.steps.length) bp=P.steps[0].s.p[0];
   if(ANIM.ball && bp) ANIM.ball.setAttribute("transform",`translate(${bp.x},${bp.y})`);
   if(ANIM.ball) ANIM.ball.setAttribute("opacity", P.steps.length? "1":"0");
   // hide the static start ball so there are not two
@@ -3249,7 +4020,7 @@ $("#backdrop").onclick=closeDrawer;
 $("#sheetBg").addEventListener("click", e=>{ if(e.target.id==="sheetBg") closeSheet(); });
 $("#shareModal").addEventListener("click", e=>{ if(e.target.id==="shareModal") closeShare(); });
 document.addEventListener("keydown", e=>{
-  if(e.key==="Escape"){ closeSheet(); closeShare(); closeDrawer(); }
+  if(e.key==="Escape"){ closeSheet(); closeShare(); closeDrawer(); closeRoster(); }
   if(e.code==="Space" && !/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName) && canAnimate()){
     e.preventDefault(); togglePlay();
   }
@@ -3258,10 +4029,184 @@ $$("#tabs button").forEach(b=> b.addEventListener("click", ()=>{ if(isPhone()) c
 $("#drillList").addEventListener("click", ()=>{ if(isPhone()) setTimeout(closeDrawer,120); });
 
 applyPhoneMode();
-loadFromHash().then(ok=>{ if(!ok) syncHash(); updatePlayBar(); });
+loadFromHash().then(ok=>{ if(!ok) syncHash(); updatePlayBar(); updateFirstRun(); });
 
 document.addEventListener("gesturestart", e=>e.preventDefault());
 document.addEventListener("dblclick", e=>{ if(e.target.closest("#boardBox")) e.preventDefault(); }, {passive:false});
+
+/* ============================================================
+   ROSTER ENTRY, PLAYER QUICK-EDIT, FIRST-RUN HINT
+   ============================================================ */
+
+/* ---------- paste a roster ---------- */
+function parseRoster(text){
+  let raw = text.split(/\r?\n/);
+  if(raw.filter(l=>l.trim()).length===1 && text.includes(","))
+    raw = text.split(",");                      // one comma-separated line also works
+  const out=[]; let benchFrom=-1;
+  raw.forEach(line=>{
+    const l=line.trim();
+    if(!l || /^[-—=_*.]{2,}$/.test(l)) return;
+    if(/^(bench|subs?|substitutes?|reserves?)\b[:\s]*$/i.test(l)){ benchFrom=out.length; return; }
+    let m=l.match(/^#?(\d{1,2})\s*[.):\-–]?\s+(.+)$/);          // "7 Torres", "7. Torres"
+    if(m){ out.push({num:m[1], name:m[2].trim()}); return; }
+    m=l.match(/^(.+?)[\s,]+#?(\d{1,2})$/);                       // "Torres 7", "Torres #7"
+    if(m){ out.push({num:m[2], name:m[1].trim()}); return; }
+    out.push({num:null, name:l});
+  });
+  return {list:out, benchFrom};
+}
+function openRoster(){
+  const L=S.lineup;
+  const body=$("#rosterBody");
+  body.innerHTML=`
+    <h2>Paste your roster</h2>
+    <p>One player per line. Numbers are optional and can go either side of the name —
+      <b>7 Torres</b>, <b>Torres 7</b> or just <b>Torres</b> all work. The first ${L.squad}
+      go into the starting lineup and the rest onto the bench. Put a line saying
+      <b>Bench</b> where you want the split to happen instead.</p>
+    <textarea class="inp" id="rosterText" rows="12" placeholder="1 Whitaker
+3 Okafor
+5 Delgado
+4 Brennan
+2 Nakamura
+6 Sory
+8 Petrov
+11 Adeyemi
+10 Torres
+7 Lindqvist
+9 Mbeki
+
+Bench
+12 Kaminski
+14 Rossi"></textarea>
+    <p class="hint" id="rosterCount">Nothing pasted yet.</p>
+    <div class="modal-foot">
+      <button class="btn" id="rosterCancel">Cancel</button>
+      <button class="btn primary" id="rosterGo">Fill the roster</button>
+    </div>`;
+  $("#rosterModal").classList.add("open");
+  const ta=$("#rosterText");
+  const upd=()=>{
+    const {list, benchFrom}=parseRoster(ta.value);
+    const n=benchFrom>=0?benchFrom:Math.min(list.length, L.squad);
+    $("#rosterCount").innerHTML = list.length
+      ? `<b>${list.length}</b> players read — <b>${n}</b> starting, <b>${Math.max(0,list.length-n)}</b> on the bench.`
+      : "Nothing pasted yet.";
+  };
+  ta.oninput=upd;
+  setTimeout(()=>ta.focus(),40);
+  $("#rosterCancel").onclick=closeRoster;
+  $("#rosterGo").onclick=()=>{
+    const {list, benchFrom}=parseRoster(ta.value);
+    if(!list.length){ ta.focus(); return; }
+    pushHist();
+    const split = benchFrom>=0 ? benchFrom : Math.min(list.length, L.squad);
+    const start=list.slice(0,split), bench=list.slice(split);
+    L.players.forEach((p,i)=>{
+      const e=start[i];
+      p.name = e ? e.name : "";
+      if(e && e.num){ p.num=e.num; L.numsEdited=true; }
+    });
+    L.bench = bench.length
+      ? bench.map((e,i)=>({num:e.num||String(12+i), name:e.name}))
+      : L.bench;
+    closeRoster(); renderRoster(); renderPlayers(); updateStatus(); syncHash();
+    toast(`${start.length} in the lineup, ${bench.length} on the bench`);
+  };
+}
+function closeRoster(){ $("#rosterModal").classList.remove("open"); }
+
+/* ---------- tap a player on the pitch ---------- */
+function editPlayer(idx){
+  const L=S.lineup, p=L.players[idx];
+  if(!p) return;
+  if(S.phone){
+    sheetMode="player"; sheetPlayer=idx; S.editIdx=idx; renderPlayers();
+    $("#sheetBg").classList.add("open");
+    refreshSheet();
+    return;
+  }
+  const row=$$("#starters .prow")[idx];
+  if(row){
+    if(S.tab!=="lineup") switchTab("lineup");
+    if(isPhone()) openDrawer();
+    row.scrollIntoView({block:"center", behavior:"smooth"});
+    const nm=row.querySelector(".nm");
+    row.classList.add("sel");
+    setTimeout(()=>row.classList.remove("sel"), 1400);
+    if(nm){ nm.focus(); nm.select(); }
+  }
+}
+function playerSheet(s, idx){
+  const L=S.lineup, p=L.players[idx];
+  const wrap=document.createElement("div");
+  wrap.innerHTML=`
+    <div class="sheet-h" style="margin-top:0">${esc(p.pos)} — on the pitch</div>
+    <div class="row" style="margin-bottom:12px">
+      <div class="field" style="flex:0 0 84px;margin:0"><label>Number</label>
+        <input class="inp" id="psNum" value="${esc(p.num)}" maxlength="2" inputmode="numeric"></div>
+      <div class="field" style="margin:0"><label>Name</label>
+        <input class="inp" id="psName" value="${esc(p.name)}" placeholder="Player name"></div>
+    </div>`;
+  s.appendChild(wrap);
+  const named=L.bench.filter(b=>b.name);
+  if(named.length){
+    const h=document.createElement("div"); h.className="sheet-h"; h.textContent="Bring on from the bench";
+    s.appendChild(h);
+    const g=document.createElement("div"); g.style.cssText="display:grid;grid-template-columns:1fr 1fr;gap:8px";
+    L.bench.forEach((b,bi)=>{
+      if(!b.name) return;
+      const btn=document.createElement("button");
+      btn.className="btn"; btn.style.padding="12px 8px";
+      btn.textContent=(b.num?b.num+"  ":"")+b.name;
+      btn.onclick=()=>{
+        pushHist();
+        const tn=p.name, tnum=p.num;
+        p.name=b.name; p.num=b.num; b.name=tn; b.num=tnum;
+        closeSheet(); renderRoster(); renderPlayers(); updateStatus(); syncHash();
+        toast(p.name+" is on");
+      };
+      g.appendChild(btn);
+    });
+    s.appendChild(g);
+  } else {
+    const hint=document.createElement("p"); hint.className="hint";
+    hint.innerHTML="No bench names yet — add them under <b>☰ → Bench</b>, or paste your whole roster in one go.";
+    s.appendChild(hint);
+  }
+  const f=document.createElement("div"); f.className="modal-foot";
+  f.innerHTML='<button class="btn primary" style="width:100%;padding:13px">Done</button>';
+  f.firstChild.onclick=closeSheet;
+  s.appendChild(f);
+  const num=$("#psNum"), nm=$("#psName");
+  num.oninput=()=>{ p.num=num.value; L.numsEdited=true; renderPlayers(); renderRoster(); };
+  nm.oninput =()=>{ p.name=nm.value; renderPlayers(); renderRoster(); updateStatus(); };
+}
+
+/* ---------- first-run hint ---------- */
+function updateFirstRun(){
+  const el2=$("#firstRun"); if(!el2) return;
+  const show = !S.seenHint && S.tab==="lineup";
+  el2.classList.toggle("on", show);
+  if(!show){ el2.innerHTML=""; return; }
+  if(el2.dataset.built) return;
+  el2.dataset.built="1";
+  el2.innerHTML=`
+    <h5>⚽ Quick start</h5>
+    <ul>
+      <li><b>Drag</b> any player to move him.</li>
+      <li><b>${S.phone?"☰":"The panel on the left"}</b> holds your roster — <b>Paste roster</b> fills all the names at once.</li>
+      <li><b>${S.phone?"Tap":"Click"}</b> a player to rename him or bring someone on.</li>
+      <li><b>Drills</b> has 51 sessions, and <b>▶</b> plays the pattern.</li>
+    </ul>
+    <div class="fr-foot">
+      <button class="btn primary" id="frGo" style="flex:1">Got it</button>
+      <button class="btn" id="frHelp">Full help</button>
+    </div>`;
+  $("#frGo").onclick=()=>{ S.seenHint=true; el2.classList.remove("on"); syncHash(); };
+  $("#frHelp").onclick=()=>{ S.seenHint=true; el2.classList.remove("on"); syncHash(); openHelp(); };
+}
 </script>
 </body>
 </html>
