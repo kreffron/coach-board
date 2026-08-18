@@ -1,6 +1,6 @@
 # Putting Coach Board online with GitHub Pages
 
-You are uploading four files. Nothing needs to be installed, and there is no build step —
+You are uploading five files. Nothing needs to be installed, and there is no build step —
 GitHub just serves the files as a website.
 
 **Files in this folder**
@@ -11,6 +11,7 @@ GitHub just serves the files as a website.
 | `manifest.webmanifest` | Lets phones install it to the home screen |
 | `icon-192.png` | App icon |
 | `icon-512.png` | App icon, larger |
+| `sw.js` | Keeps a copy on each phone so the app opens with no signal |
 
 ---
 
@@ -32,7 +33,7 @@ On the page that appears, click the **uploading an existing file** link
 (it is in the line "…or push an existing repository from the command line" — the upload link
 sits just above it).
 
-Drag all four files from this folder into the box. Do **not** drag the folder itself — drag the
+Drag all five files from this folder into the box. Do **not** drag the folder itself — drag the
 files. Then click **Commit changes** at the bottom.
 
 **4. Turn on Pages**
@@ -88,15 +89,27 @@ Two things worth knowing:
 ## Updating the app later
 
 1. Go to your repository on GitHub
-2. Click on `index.html`
-3. Click the pencil icon (**Edit**), or use **Add file → Upload files** and drop in the new
-   `index.html` with the same name
-4. **Commit changes**
+2. **Add file → Upload files** and drop in the new `index.html`
+3. **Commit changes**
 
-The live site updates within a minute or so. Everyone's link stays the same.
+Two things to watch:
 
-If a coach still sees the old version, have them pull down to refresh the page. Phones
-cache aggressively — removing the home-screen icon and re-adding it clears it for certain.
+- Your browser probably saved the download as `index (1).html`. **Rename it to exactly
+  `index.html` before you upload it**, or GitHub adds it as a second file and the live site
+  never changes. After committing, the repo should still show only five files.
+- Only `index.html` normally changes. Leave the other four alone unless you are told otherwise.
+
+The live site updates within a minute or so, and everyone's link stays the same.
+
+### Checking it worked
+
+Open the site and look at the bottom-right of the screen: it shows a build stamp, e.g.
+`build 2026-08-18 · multi-board`. If that is the build you were given, the new file is live.
+It is also shown in **Help**.
+
+If a phone is stuck on an old version, open **Help → Force refresh from the site**. That
+clears the stored copy and reloads. Deleting and re-adding the home-screen icon does the
+same thing.
 
 ---
 

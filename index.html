@@ -3010,8 +3010,8 @@ function renderRoster(){
       <input class="num" value="${esc(p.num)}" maxlength="2" aria-label="number">
       <input class="nm" value="${esc(p.name)}" placeholder="Player name" aria-label="name">`;
     const [num,nm]=row.querySelectorAll("input");
-    num.oninput=()=>{ p.num=num.value; S.lineup.numsEdited=true; linkPush(); render(); };
-    nm.oninput =()=>{ p.name=nm.value; linkPush(); render(); updateStatus(); };
+    num.oninput=()=>{ p.num=num.value; S.lineup.numsEdited=true; linkPush(); render(); syncHash(); };
+    nm.oninput =()=>{ p.name=nm.value; linkPush(); render(); updateStatus(); syncHash(); };
     const r=roleFor(i);
     if(r) row.title=r;
     st.appendChild(row);
@@ -3025,8 +3025,8 @@ function renderRoster(){
       <input class="nm" value="${esc(p.name)}" placeholder="Bench player">
       <button class="x" title="Remove">×</button>`;
     const [num,nm]=row.querySelectorAll("input");
-    num.oninput=()=>{p.num=num.value; linkPush();};
-    nm.oninput =()=>{p.name=nm.value; linkPush(); updateStatus();};
+    num.oninput=()=>{p.num=num.value; linkPush(); syncHash();};
+    nm.oninput =()=>{p.name=nm.value; linkPush(); updateStatus(); syncHash();};
     row.querySelector(".grip").onclick=()=>{
       S.swapFrom = (S.swapFrom===i? null : i); renderRoster(); renderPlayers();
       $("#stInfo").innerHTML = S.swapFrom!==null
@@ -3405,9 +3405,26 @@ function openHelp(){
     <p>The 4-2-3-1 automations are your six-pattern offensive pack, carried over as written. The 3-5-2, 4-3-3 and 4-4-2 packs were built to the same template from the standard attacking principles of each shape. Everything below them — rondos, passing, footwork, duels and expanded play — is the drill library from the JV training plan. Edit or add to any of it.</p>
     <p style="color:#93a3b0;font-size:12px">${esc(TEAM_PRESET.note)}</p>
     <p style="color:#93a3b0;font-size:12px">Tip: the pitch is landscape by default. The tall-rectangle button in the toolbar flips it to vertical, attacking upward — the way your team documents draw it, and easier to read on a phone.</p>
+    <h4>Working offline</h4>
+    <p>Once the app has been opened on a phone it keeps a copy on the device, so it starts on a field with no signal. When you do have signal it checks the site first, so you are always on the newest version.</p>
+    <p><button class="btn sm" id="btnHardRefresh">Force refresh from the site</button>
+       <span class="hint" style="margin-left:8px">Clears the stored copy and reloads. Only needed if a phone is stuck on an old version.</span></p>
     <div class="modal-foot"><button class="btn primary" id="helpClose">Got it</button></div>`;
   $("#helpModal").classList.add("open");
   $("#helpClose").onclick=()=>$("#helpModal").classList.remove("open");
+  const hr=$("#btnHardRefresh");
+  if(hr) hr.onclick=async()=>{
+    try{
+      if(navigator.serviceWorker && navigator.serviceWorker.controller)
+        navigator.serviceWorker.controller.postMessage("wipe");
+      if(window.caches){ const ks=await caches.keys(); await Promise.all(ks.map(k=>caches.delete(k))); }
+      if(navigator.serviceWorker){
+        const rs=await navigator.serviceWorker.getRegistrations();
+        await Promise.all(rs.map(r=>r.unregister()));
+      }
+    }catch(err){}
+    location.reload();
+  };
 }
 $("#helpModal").addEventListener("click", e=>{ if(e.target.id==="helpModal") e.currentTarget.classList.remove("open"); });
 
@@ -3796,7 +3813,7 @@ function setBoardCount(n){
   if(S.bi >= n) setActiveBoard(0, true);
   buildBoardBar();
   if(n===1){ hideCompare(); }
-  render(); renderRoster(); updateStatus();
+  render(); renderRoster(); updateStatus(); syncHash();
 }
 function setActiveBoard(i, quiet){
   if(i<0 || i>=S.boards.length) return;
@@ -3883,7 +3900,7 @@ function renderCompare(){
     head.className = "cmpHead";
     const nm = document.createElement("input");
     nm.className = "cmpName"; nm.value = bd.label || ""; nm.placeholder = "Option " + CMP_TAG[i];
-    nm.oninput = () => { bd.label = nm.value; buildBoardBar(); };
+    nm.oninput = () => { bd.label = nm.value; buildBoardBar(); syncHash(); };
     nm.onfocus = () => { if(S.bi!==i){ setActiveBoard(i, true); markActiveCell(); } };
     const fs = document.createElement("select");
     fs.className = "cmpForm";
@@ -4427,6 +4444,11 @@ $("#drillList").addEventListener("click", ()=>{ if(isPhone()) setTimeout(closeDr
 
 applyPhoneMode();
 loadFromHash().then(ok=>{ if(!ok) syncHash(); updatePlayBar(); updateFirstRun(); });
+
+/* keep a copy on the device so the app opens with no signal */
+if("serviceWorker" in navigator && /^https?:$/.test(location.protocol)){
+  window.addEventListener("load", ()=>{ navigator.serviceWorker.register("./sw.js").catch(()=>{}); });
+}
 
 document.addEventListener("gesturestart", e=>e.preventDefault());
 document.addEventListener("dblclick", e=>{ if(e.target.closest("#boardBox")) e.preventDefault(); }, {passive:false});
