@@ -339,7 +339,7 @@ textarea.inp{resize:vertical;min-height:64px;font-size:12.5px}
 <div id="app">
   <header>
     <button class="iconbtn mob-only" id="mobBtn" title="Menu" aria-label="Menu">☰</button>
-    <div class="brand">⚽ Coach Board <small>soccer tactics whiteboard</small></div>
+    <div class="brand">⚽ Coach Board <small id="brandSub">soccer tactics whiteboard</small></div>
     <nav class="tabs" id="tabs">
       <button data-tab="lineup" class="active">Lineup</button>
       <button data-tab="drills">Drills</button>
@@ -483,6 +483,7 @@ textarea.inp{resize:vertical;min-height:64px;font-size:12.5px}
         <span id="stTool">Tool: <b>Select</b></span>
         <span id="stInfo"></span>
         <span class="spacer"></span>
+        <span id="stBuild" style="opacity:.5;margin-right:12px"></span>
         <span><span class="kbd">V</span> select <span class="kbd">P</span> pen <span class="kbd">S</span> pass <span class="kbd">R</span> run <span class="kbd">Space</span> play <span class="kbd">⌘Z</span> undo <span class="kbd">?</span> all shortcuts</span>
       </div>
       <div id="drillBar"></div>
@@ -2165,6 +2166,8 @@ const C = {
 };
 const PALETTE = [null,"#ffffff","#f5a524","#38bdf8","#ef4444","#37c86b","#c77dff","#111827"];
 
+const BUILD = "2026-08-18 · multi-board";
+
 let uid = 1;
 const nid = () => "s" + (uid++);
 
@@ -3332,6 +3335,7 @@ function openHelp(){
      <path d="${wavy?"M4,10 q6,-6 12,0 t12,0 L52,10":"M4,10 L52,10"}" fill="none" stroke="${c}" stroke-width="3" ${dash?'stroke-dasharray="7 5"':""} marker-end="url(#lm${c.slice(1)}${dash?1:0}${wavy?1:0})"/>`);
   $("#helpBody").innerHTML=`
     <h2>Coach Board</h2>
+    <p class="hint">Build <b>${BUILD}</b> — if this is not what you expect after updating the site, your browser is showing a cached copy.</p>
     <p>A whiteboard for lineups and drills. Everything you draw stays on the board until you clear it, and you can save the whole thing to a file.</p>
     <h4>Comparing line-ups</h4>
     <p>On the Lineup tab, <b>Boards</b> lets you put two or three starting XIs on the screen at once — one per opponent, or a first-half and a second-half shape. Each board has its own name and its own formation; drag players on any of them. A new board keeps the squad and drops them into a fresh formation shape.</p>
@@ -3428,6 +3432,8 @@ function init(){
   renderDrillList();
   renderRoster();
   buildBoardBar();
+  const sb=$("#stBuild"); if(sb) sb.textContent="build "+BUILD;
+  const bs=$("#brandSub"); if(bs) bs.title="build "+BUILD;
 
   $$("#tabs button").forEach(b=> b.onclick=()=>switchTab(b.dataset.tab));
   $("#teamName").oninput=e=>{ S.boards.forEach(b=>b.teamName=e.target.value); };
