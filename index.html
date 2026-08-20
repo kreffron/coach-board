@@ -2144,6 +2144,247 @@ DRILLS.push(
 }
 );
 
+/* ===================== SET PIECES ===================== */
+DRILLS.push(
+{
+  id:"sp1", name:"1 · Corner: Swing and Return", cat:"Set Pieces", dur:"15 min",
+  players:"All 10 outfield vs 8 + GK", area:"Final third", view:"third",
+  setup:"An attacking corner from our left. Nobody crosses it. Three passes take the ball around the OUTSIDE of the box — away from goal — so every defender turns and follows it. While that is happening the man who took the corner walks off the flag and slips into the near-post channel behind them. The last pass goes through the line, back to him. Four of ours are already in the box waiting for what he does next. Set it up with eight defenders and a keeper so the picture is real; walk it twice before you run it.",
+  seq:["#7 plays it out of the corner to #8, who is standing on the corner of the box. Nothing about this looks dangerous — that is the point.",
+    "#8 swings it across the top of the box to #6. The whole defensive line turns to watch it.",
+    "THROUGH. #6 threads it between the last two defenders into the near-post channel — where #7 has arrived.",
+    "#7 drives it low across the six-yard box. Near post, middle, back post, spot — four of ours are attacking it at four different distances."],
+  runs:["A — #7 leaves the flag as the ball goes to #6 and walks, then sprints, into the near-post channel. He is the last player on the pitch they expect to see, because he was standing on the corner flag.",
+    "B — #9 attacks the back post on the release of the through ball.",
+    "C — #4 attacks the near post.",
+    "D — #5 holds the penalty spot for anything cut back or spilled.",
+    "E — #11 is in the box from the start. He attacks the middle of the six-yard box — the gap between #4 at the near post and #9 at the back one."],
+  off:["#8 pushes up to the corner of the box behind the ball once he has played it — the second-ball man on that side.",
+    "#6 follows his pass to the edge of the box.",
+    "#10 holds the far side of the D. He does not touch the ball in this routine; he is there for the cut-back and for anything headed out that way.",
+    "#2 and #3 hold the top of the box as rest defence. A corner worked short is a counter-attack waiting to happen if nobody stays."],
+  points:["The first two passes must look boring. If they are played at speed the defence smells it — walk the ball around the outside.",
+    "Every pass goes AWAY from goal until the third one. That is what turns eight sets of shoulders the wrong way.",
+    "#7's timing is the whole routine. Too early and a defender picks him up; too late and the pass is gone. He goes on pass ②, not before.",
+    "The through ball is on the floor and firm. A lofted one gives the keeper time to come.",
+    "#7 drives it across the six-yard box — he does not shoot. Four runners are already attacking four different distances.",
+    "If the through ball is not on, #6 plays it back to #8 and you go round again. Two circuits is fine; the defence tires of watching."],
+  progs:["Walk it unopposed until the pattern is automatic, then add the eight defenders passive.",
+    "Live defenders, but the routine must be completed before anyone can shoot.",
+    "Mirror it from the right-hand corner with #11 taking and #7 in the box.",
+    "Add the counter: if the defence clears it, they attack a goal on halfway and your rest defence has to stop them."],
+  key:"Three passes away from goal, then one through it — and the taker arrives last.",
+  anim:{r:[[2,3],[3,4],[3,4],[3,4],[3,4],[1,2],[2,3],[2,4],[1,4],[1,4]]},
+  items:[
+    ["mate",1040,34,{t:"7"}],["mate",884,118,{t:"8"}],
+    ["mate",798,246,{t:"6"}],["mate",820,430,{t:"10"}],
+    ["mate",870,260,{t:"4"}],["mate",900,430,{t:"9"}],["mate",860,520,{t:"5"}],
+    ["mate",884,332,{t:"11"}],
+    ["mate",720,300,{t:"2"}],["mate",720,480,{t:"3"}],
+    ["opp",1038,338],["opp",1000,290],["opp",1000,370],["opp",1000,440],["opp",996,500],
+    ["opp",930,140],["opp",850,300],["opp",940,250],["opp",940,392],
+    ["ball",1046,8],
+    ["pass",1044,14,892,106,{n:"1"}],
+    ["pass",876,130,808,234,{n:"2"}],
+    ["pass",804,258,946,202,{n:"3"}],
+    ["pass",958,206,1004,396,{n:"4"}],
+    ["run",1038,46,952,196,{n:"A"}],["run",906,436,1006,402,{n:"B"}],
+    ["run",876,266,1000,312,{n:"C"}],["run",866,526,938,442,{n:"D"}],
+    ["run",886,338,966,368,{n:"E"}],
+    ["run",878,132,900,200,{sup:true,w:3}],
+    ["run",804,258,840,340,{sup:true,w:3}],
+    ["run",826,436,880,470,{sup:true,w:3}],
+    ["run",726,306,790,300,{sup:true,w:3}],["run",726,486,770,470,{sup:true,w:3}],
+    ["text",820,620,{t:"the ball goes around them — the taker goes through them"}]
+  ]
+}
+);
+
+/* ---- Arsenal-style corners -------------------------------------------------
+   The real mechanic: most of the runners START BEYOND THE BACK POST, stacked
+   on the goal line where the defence has nobody, and CYCLE into the six-yard
+   box either half a step before the ball is struck or exactly as it is struck.
+   Two more attack from the top of the box, and some of the back-post group
+   turn into blockers for them on the way through. One takes the keeper.
+   Occupying the space in front of the keeper is legal; holding or backing into
+   him is a free kick — see the coaching points.                               */
+DRILLS.push(
+{
+  id:"sp2", name:"2 · Corner: Back-Post Stack", cat:"Set Pieces", dur:"15 min",
+  players:"10 outfield vs 8 + GK", area:"Final third", view:"third",
+  setup:"An attacking corner from our left. Four of ours stand BEYOND the back post, stacked on the goal line past everything, where no defender wants to stand. Two more wait at the top of the box. NOBODY is in the six-yard box. Then, as the ball is struck, the whole thing empties into the six at once: the stack cycles across the face of goal, two of them turn side-on and block the far side on the way through, and the runner from the top of the box arrives at the back post they have all just left.",
+  seq:["#7 delivers an inswinger to the BACK post — the space the stack has vacated.",
+    "#9 has run 13 yards from the top of the box, through the lane #4 and #6 have blocked open, and meets it. He heads it back across the keeper into the near side."],
+  runs:["A — #11 shows for the short one, gets waved off, and spins out to the corner of the box as our outlet.",
+    "B — #5 comes off the front of the stack and takes the keeper. He gets in front of him and stays there. He never looks at the ball.",
+    "C — #8 cycles the full width of the face to the NEAR post. Longest run in the routine and the first thing the zonal line has to react to — he takes them with him.",
+    "D — #4 cycles up and turns side-on in front of the far zonal defender. Blocker first, second-ball man after.",
+    "E — #6 does the same to whoever is covering the stack, and holds that space for the cut-back.",
+    "F — #9 is the target. He waits at the top of the box, goes on the STRIKE, and attacks the back post.",
+    "G — #10 is the second runner from the top of the box, attacking the near-post side behind #8."],
+  off:["#3 and #2 hold the top of the box. Two men back is the minimum on any corner — a cleared corner is a three-on-two the other way.",
+    "#7 follows his delivery in toward the corner of the box so a clearance to that side comes straight back.",
+    "Nobody stands in the six-yard box before the kick. That is the whole idea — there is nothing to mark until it is too late to mark it."],
+  points:["TIMING IS EVERYTHING. The stack cycles half a step before the ball is struck, or exactly as it is struck. Never after. Moving on the flight of the ball means arriving late, and a late arrival is a header for the keeper.",
+    "They start BEHIND the back post on purpose. A defender standing there is a defender doing nothing, so nobody stands there — which means our four begin unmarked and already moving while their markers begin flat-footed.",
+    "#4 and #6 are blockers, not scorers. Turn side-on, arms in, stand still, let the defender run into you. Moving INTO a defender is a foul; being in the way is not. Teach that distinction properly or it costs us goals.",
+    "#5 in front of the keeper: he gets there first and holds his ground. He may NOT push, hold, or back into him. Occupying the space is legal; making contact is a free kick, and at our level the referee will give it.",
+    "#9 and #10 must WAIT at the top of the box. The instinct is to drift in early. If they are already moving when the stack cycles, everybody arrives together and we have crowded ourselves out.",
+    "#9 heads it back ACROSS the keeper, not straight at him. The keeper's momentum is toward the ball; the far side of him is open.",
+    "If they leave nobody on the short one, take it short instead. #11 is a live option every time, not a decoy every time."],
+  progs:["Walk the cycle with no ball and no defence. Stack, hold, empty. Ten times until it fires as one movement.",
+    "Add the ball. Still no defence — the only thing being coached is that nobody is in the six until the kick.",
+    "Add six passive defenders so the blockers have somebody to stand in front of.",
+    "Live, full defence, keeper competing.",
+    "Move the delivery: same stack, same cycle, but the ball goes to the near post for #8 or to the middle. They cannot defend all three if the cycle is on time.",
+    "Mirror it from the right corner with #11 delivering."],
+  key:"Start behind the back post where nobody is marking, and empty into the six as the ball is struck — not after.",
+  anim:{r:[[0,1],[0,1],[0,1],[0,1],[0,1],[0,1],[0,1],[0,2],[0,2],[1,2]]},
+  items:[
+    ["mate",1042,36,{t:"7"}],["mate",988,84,{t:"11"}],
+    ["mate",1040,416,{t:"5"}],["mate",996,450,{t:"8"}],
+    ["mate",1032,486,{t:"4"}],["mate",1000,514,{t:"6"}],
+    ["mate",884,352,{t:"9"}],["mate",882,286,{t:"10"}],
+    ["mate",760,240,{t:"3"}],["mate",762,460,{t:"2"}],
+    ["opp",1042,330],
+    ["opp",996,286],["opp",994,344],["opp",996,402],
+    ["opp",914,300],["opp",916,368],
+    ["opp",960,462],["opp",952,506],
+    ["opp",964,112],
+    ["ball",1046,8],
+    ["curve",1044,14,1004,384,{n:"1",bend:28}],
+    ["shot",1000,388,1050,340,{n:"2"}],
+    ["run",988,92,930,150,{n:"A"}],
+    ["run",1040,416,1032,346,{n:"B"}],
+    ["run",996,450,1020,282,{n:"C"}],
+    ["run",1032,486,982,414,{n:"D"}],
+    ["run",1000,514,952,470,{n:"E"}],
+    ["run",884,352,1008,388,{n:"F"}],
+    ["run",882,286,966,296,{n:"G"}],
+    ["run",766,246,812,268,{sup:true,w:3}],["run",768,466,816,450,{sup:true,w:3}],
+    ["run",1038,46,1006,120,{sup:true,w:3}],
+    ["text",800,620,{t:"start behind the back post — empty into the six on the strike"}]
+  ]
+},
+{
+  id:"sp3", name:"3 · Corner: Empty the Back Post", cat:"Set Pieces", dur:"15 min",
+  players:"10 outfield vs 8 + GK", area:"Final third", view:"third",
+  setup:"The same stack beyond the back post, from the RIGHT corner this time, but now the ball is driven flat and hard at the NEAR post instead of floated. One man cycles the whole width of the six to meet it and glances it BACK — and the back post he just left is completely empty, because his own stack vacated it and dragged the defence with them. That is where the runner from the top of the box arrives.",
+  seq:["#11 drives it in flat and low, no more than head height, at the near post.",
+    "#8 has cycled out of the stack to meet it. He does not shoot — he glances it ON, back across the face of goal toward the post he started behind.",
+    "#9 arrives at the back post from the top of the box and finishes from two yards."],
+  runs:["A — #8 is the flick man. He cycles the full width of the six-yard box to the near post and attacks the ball in FRONT of his marker.",
+    "B — #5 comes off the stack and takes the keeper.",
+    "C — #4 cycles up and blocks the near zonal defender so nobody steps across the flick.",
+    "D — #6 blocks whoever is covering the stack and holds that space.",
+    "E — #9 waits at the top of the box, goes on the STRIKE, and arrives at the back post with the flick — not with the delivery.",
+    "F — #10 is the second runner from the top of the box, coming in level with the near post for anything that drops or is half cleared.",
+    "G — #7 shows short, gets waved off, and spins out to the corner of the box as our outlet."],
+  off:["#2 and #3 hold the top of the box as rest defence.",
+    "#11 follows his delivery in down the goal line.",
+    "The back post is empty on purpose. If the flick beats everybody it still ends up there, and #9 and #10 are both attacking that side."],
+  points:["Flat and firm. This delivery is a PASS to the near post at head height, not a cross. If it loops, the near-post defender heads it away and we get nothing.",
+    "#8's contact is a glance, not a header at goal. Eyes on the ball, neck turned, let it run off the side of his forehead. He is moving it eight yards, not thirty.",
+    "The stack leaving the back post is what creates the goal. Four bodies moving toward the near post pull every marker with them, and the space they leave behind is where we score.",
+    "#9 waits at the top of the box and goes on the strike. Every young player goes early at the back post and ends up standing still when the ball arrives.",
+    "#4 and #6 block by standing still in the way, side-on, arms in. They do not move into the defender — that is a foul and it will be given.",
+    "#5 occupies the space in front of the keeper without touching him. A keeper who has to go around a body has already lost half a second.",
+    "The keeper cannot come for a flat near-post ball. That is why we drive it: floated balls belong to him, flat ones do not."],
+  progs:["Static, no defence: the drive and the flick only. Twenty reps until #8 can glance it on every time.",
+    "Add a near-post defender competing with #8.",
+    "Add the back post: #9 and one marker, live.",
+    "Full eight plus keeper, live.",
+    "Combine with drill 2 — same stack, same cycle, and the taker chooses flat or floated with no call. Now the defence has to defend both."],
+  key:"The stack empties toward the near post, and we score at the one they left behind.",
+  anim:{r:[[0,1],[0,1],[0,1],[0,1],[0,2],[1,3],[0,1],[0,2],[0,2],[1,3]]},
+  items:[
+    ["mate",1042,644,{t:"11"}],["mate",988,596,{t:"7"}],
+    ["mate",1040,264,{t:"5"}],["mate",996,230,{t:"8"}],
+    ["mate",1032,194,{t:"4"}],["mate",1000,166,{t:"6"}],
+    ["mate",884,328,{t:"9"}],["mate",882,394,{t:"10"}],
+    ["mate",762,220,{t:"2"}],["mate",760,440,{t:"3"}],
+    ["opp",1042,350],
+    ["opp",996,394],["opp",994,336],["opp",996,278],
+    ["opp",914,380],["opp",916,312],
+    ["opp",960,218],["opp",952,174],
+    ["opp",964,568],
+    ["ball",1046,672],
+    ["pass",1044,666,1004,398,{n:"1"}],
+    ["pass",1008,392,1020,300,{n:"2"}],
+    ["shot",1022,296,1050,336,{n:"3"}],
+    ["run",996,230,1006,396,{n:"A"}],
+    ["run",1040,264,1032,334,{n:"B"}],
+    ["run",1032,194,982,266,{n:"C"}],
+    ["run",1000,166,952,210,{n:"D"}],
+    ["run",884,328,1008,292,{n:"E"}],
+    ["run",882,394,966,384,{n:"F"}],
+    ["run",988,590,930,530,{n:"G"}],
+    ["run",766,226,812,244,{sup:true,w:3}],["run",766,446,814,430,{sup:true,w:3}],
+    ["run",1040,650,1044,586,{sup:true,w:3}],
+    ["text",800,84,{t:"drive it flat to the near post — score at the one they left"}]
+  ]
+},
+{
+  id:"sp4", name:"4 · Corner: Short and Reload", cat:"Set Pieces", dur:"18 min",
+  players:"10 outfield vs 8 + GK", area:"Final third", view:"third",
+  setup:"Same stack beyond the back post, but this time we do not deliver from the flag at all. The corner goes short, the receiver carries it eight yards infield, and NOW it gets whipped in — from a better angle, with the defence already stepping out, and with the stack still sitting exactly where it was. The stack does NOT move while the ball is being worked short. It holds behind the back post and only cycles when #11 loads up to cross.",
+  seq:["#7 rolls it short to #11.",
+    "#11 takes a touch and carries it infield toward the corner of the box. #7 overlaps outside him, which is what pulls the second defender out.",
+    "#11 whips it in from the new angle, over everybody, to the BACK post — the space the stack has just vacated.",
+    "#9 has run the diagonal from the top of the box and finishes it."],
+  runs:["A — #7 overlaps outside #11 down the goal line after playing it short. He may never touch the ball. He is there to make it two against one so a defender has to leave the box.",
+    "B — #5 comes off the stack and takes the keeper as the whip comes in.",
+    "C — #8 cycles the full width of the face to the near post and takes the zonal line with him.",
+    "D — #4 cycles up and blocks the far zonal defender.",
+    "E — #6 blocks whoever is covering the stack and holds that space for the cut-back.",
+    "F — #9 runs the diagonal from the top of the box to the BACK post. Latest arrival, completely unmarked if the cycle has done its job.",
+    "G — #10 is the second runner from the top of the box, attacking the near-post side."],
+  off:["#3 and #2 hold the top of the box. This is the corner most likely to get countered — two of ours are outside the box in the corner and cannot recover.",
+    "If the defence sends two out to the short corner, #11 plays it straight back to #7 and we deliver from the flag as normal — that is drill 2.",
+    "The stack holds. Nobody drifts toward the ball while it is being worked short."],
+  points:["The short pass is a decision, not a routine. If they have two men covering it, do not take it — go back to the flag.",
+    "#11's carry has to draw somebody. If he carries it infield and nobody comes, he keeps carrying until they do, or he shoots.",
+    "The stack holding still is the hard part. Young players drift toward the ball when it goes short. They must stand behind the back post and wait for the load-up.",
+    "The cycle fires as #11 strikes it, not when he picks his head up. Same rule as every corner we take.",
+    "The delivery from the new angle is a different ball — flatter and later. Get real reps at it; a corner from the flag and a cross from 25 yards out are not the same skill.",
+    "#5 gets in front of the keeper as #11 loads up, not before. Standing on the keeper for ten seconds gets it whistled.",
+    "Rest defence matters more here than on any other corner. Rehearse the clearance: if they head it out, #3 and #2 have to win the first ball on the edge or we are gone."],
+  progs:["Walk the ball pattern only — short, carry, whip — with no bodies in the box.",
+    "Add the stack and hold them still. The only coaching point is that nobody drifts.",
+    "Add one short defender, live. Now the decision is real.",
+    "Full defence, live, with the counter switched on: if they clear it they attack a goal on halfway.",
+    "Give the taker a free choice between drills 2, 3 and 4 with no call. If our own players can read it off the setup, so can the opposition — fix whatever gave it away."],
+  key:"Two against one in the corner drags a defender out, and the stack does not move until the cross is loaded.",
+  anim:{r:[[1,2],[2,3],[2,3],[2,3],[2,3],[2,3],[2,3],[2,4],[2,4]]},
+  items:[
+    ["mate",1042,36,{t:"7"}],["mate",986,86,{t:"11"}],
+    ["mate",1040,416,{t:"5"}],["mate",996,450,{t:"8"}],
+    ["mate",1032,486,{t:"4"}],["mate",1000,514,{t:"6"}],
+    ["mate",884,352,{t:"9"}],["mate",882,286,{t:"10"}],
+    ["mate",760,240,{t:"3"}],["mate",762,460,{t:"2"}],
+    ["opp",1042,330],
+    ["opp",996,286],["opp",994,344],["opp",996,402],
+    ["opp",914,300],["opp",916,368],
+    ["opp",960,462],["opp",952,506],
+    ["opp",962,120],
+    ["ball",1046,8],
+    ["pass",1044,14,992,78,{n:"1"}],
+    ["carry",992,84,940,120,{n:"2"}],
+    ["curve",938,128,1004,384,{n:"3",bend:26}],
+    ["shot",1000,388,1050,340,{n:"4"}],
+    ["run",1038,30,1024,86,{n:"A"}],
+    ["run",1040,416,1032,346,{n:"B"}],
+    ["run",996,450,1020,282,{n:"C"}],
+    ["run",1032,486,982,414,{n:"D"}],
+    ["run",1000,514,952,470,{n:"E"}],
+    ["run",884,352,1008,388,{n:"F"}],
+    ["run",882,286,966,296,{n:"G"}],
+    ["run",766,246,818,270,{sup:true,w:3}],["run",768,466,820,452,{sup:true,w:3}],
+    ["text",800,620,{t:"short, carry, whip — the stack never moves until the load-up"}]
+  ]
+}
+);
+
 /* ============================================================
    CORE — state, pitch, rendering
    ============================================================ */
@@ -2166,7 +2407,7 @@ const C = {
 };
 const PALETTE = [null,"#ffffff","#f5a524","#38bdf8","#ef4444","#37c86b","#c77dff","#111827"];
 
-const BUILD = "2026-08-18 · multi-board";
+const BUILD = "2026-08-20 · set pieces";
 
 let uid = 1;
 const nid = () => "s" + (uid++);
@@ -2657,7 +2898,7 @@ const TOOLS = [
   [["eraser","Eraser  (E)"]]
 ];
 const CAT_ORDER=["Automations · 4-2-3-1","Automations · 3-5-2","Automations · 4-3-3",
-  "Automations · 4-4-2","Warm-Up","Rondos","Passing","Footwork","Duels","Expanded Play"];
+  "Automations · 4-4-2","Set Pieces","Warm-Up","Rondos","Passing","Footwork","Duels","Expanded Play"];
 const KEYS = {v:"select",p:"pen",s:"pass",r:"run",d:"carry",c:"curve",t:"text",e:"eraser",l:"line",z:"zone"};
 const PLACE = new Set(["cone","disc","ball","goal","mann","mate","opp","neut","coach"]);
 const DRAGT = new Set(["line","pass","run","shot","carry","curve","rect","ellipse","zone"]);
@@ -3051,7 +3292,8 @@ function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;",
    ============================================================ */
 function allDrills(){ return DRILLS.concat(S.drills.custom); }
 function buildCatSelect(){
-  const all=[...new Set(allDrills().map(d=>d.cat))];
+  const rank=c=>{ const i=CAT_ORDER.indexOf(c); return i<0?99:i; };
+  const all=[...new Set(allDrills().map(d=>d.cat))].sort((a,b)=>rank(a)-rank(b));
   const autos=all.filter(c=>/^Automations/.test(c));
   const rest =all.filter(c=>!/^Automations/.test(c));
   const sel=$("#drillCat"); const cur=sel.value;
