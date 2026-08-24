@@ -97,6 +97,12 @@ select.inp{appearance:none;background-image:linear-gradient(45deg,transparent 50
 .seg button.active{background:var(--panel2);color:var(--txt);box-shadow:0 1px 3px rgba(0,0,0,.35)}
 
 .plist{display:flex;flex-direction:column;gap:5px}
+.lulist{display:flex;flex-direction:column;gap:5px}
+.lurow{display:flex;align-items:center;gap:6px;background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:4px 5px}
+.lurow .lunm{flex:1;min-width:0;padding:6px 7px;background:#101820;border:1px solid var(--line);border-radius:5px;font-size:12.5px;color:var(--txt)}
+.lurow .lunm:focus{border-color:var(--accent);outline:none}
+.lurow .lumeta{flex:0 0 auto;font-size:10px;color:var(--muted);white-space:nowrap}
+.lurow button{flex:0 0 auto}
 .prow{display:flex;align-items:center;gap:6px;background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:4px 5px}
 .prow.sel{border-color:var(--accent);box-shadow:0 0 0 1px rgba(55,200,107,.35) inset}
 .prow .pos{flex:0 0 34px;font-size:10px;font-weight:800;color:var(--muted);text-align:center;letter-spacing:.04em}
@@ -129,6 +135,11 @@ main{flex:1;display:flex;flex-direction:column;min-width:0;min-height:0;backgrou
 .colors{display:flex;gap:4px;align-items:center}
 .sw{width:22px;height:22px;border-radius:50%;border:2px solid transparent;padding:0;background-clip:padding-box}
 .sw.active{border-color:#fff;box-shadow:0 0 0 2px rgba(255,255,255,.18)}
+.swwheel{width:22px;height:22px;border-radius:50%;padding:0;border:2px solid var(--line);
+  background:conic-gradient(red,#ff0,#0f0,#0ff,#00f,#f0f,red);cursor:pointer;flex:0 0 auto}
+.swwheel::-webkit-color-swatch-wrapper{padding:0}
+.swwheel::-webkit-color-swatch{border:none;border-radius:50%;opacity:0}
+.swwheel::-moz-color-swatch{border:none;border-radius:50%;opacity:0}
 .sw.auto{background:conic-gradient(#f5a524,#38bdf8,#ef4444,#37c86b,#f5a524);font-size:10px;font-weight:800;color:#0b1014;line-height:18px}
 .widths{display:flex;gap:3px;align-items:center}
 .wbtn{width:28px;height:28px;border-radius:6px;background:var(--chip);border:1px solid transparent;display:grid;place-items:center}
@@ -142,6 +153,22 @@ main{flex:1;display:flex;flex-direction:column;min-width:0;min-height:0;backgrou
 #board.mode-erase{cursor:not-allowed}
 #textInput{position:absolute;display:none;z-index:20;background:#0d1317;border:2px solid var(--accent);
   border-radius:8px;padding:8px 10px;font-size:16px;color:#fff;min-width:170px}
+#labelBar{position:absolute;left:12px;top:12px;z-index:18;display:none;align-items:center;gap:9px;
+  background:rgba(11,16,20,.9);border:1px solid var(--line);border-radius:11px;padding:7px 9px;
+  backdrop-filter:blur(5px);box-shadow:0 6px 22px rgba(0,0,0,.45)}
+#labelBar.on{display:flex}
+#lbWhat{font-size:10.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+#lbIn{width:62px;background:#0d1317;border:1px solid var(--line);border-radius:7px;
+  padding:6px 8px;font-size:16px;font-weight:800;color:#fff;text-align:center}
+#lbIn:focus{border-color:var(--accent);outline:none}
+#lbColor{width:30px;height:30px;min-width:30px;border-radius:50%;padding:0;border:2px solid var(--line);
+  background:conic-gradient(red,#ff0,#0f0,#0ff,#00f,#f0f,red);flex:0 0 auto}
+#lbColor::-webkit-color-swatch-wrapper{padding:0}
+#lbColor::-webkit-color-swatch{border:none;border-radius:50%}
+#lbColor::-moz-color-swatch{border:none;border-radius:50%}
+#lbClear{background:none;border:none;color:var(--muted);font-size:18px;line-height:1;
+  min-width:30px;min-height:30px;display:flex;align-items:center;justify-content:center}
+.lurow .lubin{min-width:34px;min-height:34px}
 #btnZoomReset{position:absolute;right:14px;top:14px;z-index:15;display:none;
   background:rgba(11,16,20,.82);border:1px solid var(--line);border-radius:20px;
   padding:7px 13px;font-size:12px;font-weight:700;color:#e7edf2;backdrop-filter:blur(4px)}
@@ -229,13 +256,48 @@ textarea.inp{resize:vertical;min-height:64px;font-size:12.5px}
 .legend div{display:flex;align-items:center;gap:8px;font-size:12.5px;color:#c3d0da}
 .legend svg{flex:0 0 46px}
 .modal-foot{display:flex;justify-content:flex-end;gap:8px;margin-top:20px;flex-wrap:wrap}
+.modal.wide{max-width:820px}
+/* ---- squad database ---- */
+#sqList{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.sqrow{background:var(--panel2);border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.sqrow.open{border-color:var(--accent)}
+.sqhead{display:flex;align-items:center;gap:8px;padding:7px 9px;cursor:pointer;min-height:44px}
+.sqhead .sqnum{flex:0 0 34px;text-align:center;font-weight:800;font-size:13px;color:var(--accent)}
+.sqhead .sqnm{flex:1;min-width:0;font-weight:600;font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sqhead .sqpos{flex:0 0 auto;display:flex;gap:3px}
+.sqhead .sqst{flex:0 0 auto;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.pchip{font-size:9.5px;font-weight:800;letter-spacing:.03em;background:var(--chip);color:#c3d0da;
+  border:1px solid var(--line);border-radius:5px;padding:2px 4px}
+.sqbody{display:none;padding:2px 9px 11px;border-top:1px solid var(--line)}
+.sqrow.open .sqbody{display:block}
+.sqbody .row{gap:8px}
+.sqposrow{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 10px}
+.pbtn{background:var(--chip);border:1px solid var(--line);border-radius:7px;padding:8px 10px;
+  font-size:11.5px;font-weight:800;color:#c3d0da;min-height:36px;min-width:44px}
+.pbtn.on{background:var(--accent);border-color:var(--accent);color:#07130c}
+.statrow{display:flex;gap:10px;flex-wrap:wrap}
+.stat{display:flex;align-items:center;gap:6px;background:#101820;border:1px solid var(--line);
+  border-radius:8px;padding:4px 6px}
+.stat label{font-size:10px;font-weight:800;letter-spacing:.06em;color:var(--muted);text-transform:uppercase}
+.stat button{width:32px;height:32px;border-radius:6px;background:var(--panel2);border:1px solid var(--line);
+  color:#e7edf2;font-size:16px;font-weight:800;line-height:1}
+.stat input{width:46px;text-align:center;background:transparent;border:0;color:#e7edf2;
+  font-size:15px;font-weight:800;font-variant-numeric:tabular-nums;padding:0}
+#sqEmpty{font-size:13px;color:var(--muted);line-height:1.55;margin:10px 0}
+#sqTools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}
+#sqTop{position:sticky;top:-22px;z-index:2;background:var(--panel);
+  padding-top:2px;margin:-2px 0 4px;border-bottom:1px solid var(--line)}
+#sqTop h2{display:flex;align-items:center;gap:8px}
+#sqX{margin-left:auto;font-size:20px;line-height:1;padding:2px 10px;min-height:34px}
+#sqTop .hint{margin-bottom:8px}
+#sqMatch{display:flex;gap:6px;align-items:center;font-size:12px;color:var(--muted)}
 .linkbox{width:100%;background:#101820;border:1px solid var(--line);border-radius:8px;padding:10px;
   font-size:12px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;word-break:break-all;max-height:90px;overflow:auto;color:#9fd8ff}
 
 /* ============ PHONE ============ */
 @media (max-width:780px), (max-height:500px){
   header{gap:10px;padding:6px 10px;padding-top:calc(6px + var(--sat))}
-  .brand{font-size:13.5px}
+  .brand{font-size:13.5px;min-width:0;overflow:hidden;text-overflow:ellipsis}
   .brand small{display:none}
   .tabs button{padding:8px 14px;font-size:13px}
   .desk-only{display:none !important}
@@ -259,8 +321,8 @@ textarea.inp{resize:vertical;min-height:64px;font-size:12.5px}
   .prow .num{flex:0 0 42px;width:42px;padding:8px 2px}
   .prow .nm{padding:8px}
   .prow .grip{flex:0 0 34px;height:36px;font-size:15px}
-  .prow .x{flex:0 0 32px;font-size:20px}
-  .tg{padding:9px 11px;font-size:12.5px}
+  .prow .x{flex:0 0 34px;font-size:20px;min-height:34px}
+  .tg{padding:10px 11px;font-size:12.5px;min-height:38px}
   .dcard{padding:12px}
   .dcard .dn{font-size:14px}
 
@@ -279,6 +341,13 @@ textarea.inp{resize:vertical;min-height:64px;font-size:12.5px}
   #drillBar .btn{flex:0 0 auto;padding:9px 11px}
   #drillBar #pbSeek{flex:1;width:auto;min-width:0}
   #drillBar .pbBtn{width:42px;height:42px}
+  #colorPop{position:fixed;left:8px;right:8px;z-index:120;display:none;
+    background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px;
+    box-shadow:0 -8px 30px rgba(0,0,0,.5);gap:9px;align-items:center;justify-content:space-between}
+  #colorPop.on{display:flex}
+  #colorPop .sw{width:36px;height:36px;border-width:3px}
+  #colorPop .swwheel{width:36px;height:36px}
+  .dtool.chip i{display:block;width:22px;height:22px;border-radius:50%;border:2px solid rgba(255,255,255,.35)}
   #dockScrollWrap{position:relative;flex:1;min-width:0}
   #dockScrollWrap:after{content:"";position:absolute;right:0;top:0;bottom:0;width:26px;pointer-events:none;
     background:linear-gradient(90deg,rgba(23,30,36,0),var(--panel))}
@@ -293,6 +362,15 @@ textarea.inp{resize:vertical;min-height:64px;font-size:12.5px}
   .modal{padding:18px;border-radius:14px;max-height:88vh}
   .legend{grid-template-columns:1fr}
 }
+/* the narrowest phones in use: give the header room to fit */
+@media (max-width:400px){
+  header{gap:8px;padding-left:calc(9px + var(--sal));padding-right:calc(9px + var(--sar))}
+  .tabs button{padding:8px 11px}
+  .brand{font-size:13px}
+}
+@media (max-width:360px){
+  .brand{display:none}
+}
 @media (max-height:500px){
   #dock{padding-top:5px;padding-bottom:calc(5px + var(--sab))}
   .dtool{width:42px;height:42px;flex:0 0 42px}
@@ -300,7 +378,7 @@ textarea.inp{resize:vertical;min-height:64px;font-size:12.5px}
 
 @media print{
   html,body{background:#fff !important;overflow:visible !important;height:auto !important;color:#000}
-  header,#sidebar,#toolbar,#statusbar,.modal-bg,#textInput,#dock,#backdrop,#btnZoomReset,#sheetBg,#playBar,#drillBar{display:none !important}
+  header,#sidebar,#toolbar,#statusbar,.modal-bg,#textInput,#labelBar,#dock,#backdrop,#btnZoomReset,#sheetBg,#playBar,#drillBar{display:none !important}
   #app,.body,main{display:block !important;height:auto !important;background:#fff !important;overflow:visible !important}
   #boardWrap{padding:0 !important;display:block !important;height:auto !important;background:#fff !important;overflow:visible !important}
   #boardBox{width:100% !important;height:auto !important;box-shadow:none;border-radius:0;background:#fff !important}
@@ -388,6 +466,11 @@ textarea.inp{resize:vertical;min-height:64px;font-size:12.5px}
             </select>
           </div>
         </div>
+        <div class="sec-title">Saved line-ups <span id="luCount" class="tag">0</span></div>
+        <div class="field"><button class="btn primary" id="btnSaveXI" style="width:100%">&#128190; Save this line-up</button></div>
+        <div class="lulist" id="luList"></div>
+        <p class="hint" id="luHint" style="margin-bottom:12px"></p>
+
         <div class="sec-title">Boards</div>
         <div class="row" id="cmpCount" style="margin-bottom:8px"></div>
         <div class="bpick" id="cmpPick"></div>
@@ -401,7 +484,7 @@ textarea.inp{resize:vertical;min-height:64px;font-size:12.5px}
         <div class="field"><button class="btn primary" id="btnPreset" style="width:100%">★ Load 4-2-3-1 team preset</button></div>
         <div class="row">
           <div class="field"><label>Kit color</label>
-            <div class="swatchrow"><input type="color" id="teamColor" value="#1f6fe0"><input class="inp" id="teamColorTxt" value="#1f6fe0"></div>
+            <div class="swatchrow"><input type="color" id="teamColor" value="#1f6fe0" aria-label="Kit colour"><input class="inp" id="teamColorTxt" value="#1f6fe0" aria-label="Kit colour hex code"></div>
           </div>
         </div>
         <div class="row" style="margin-bottom:12px">
@@ -419,6 +502,9 @@ textarea.inp{resize:vertical;min-height:64px;font-size:12.5px}
         <div class="row" style="margin-bottom:9px">
           <button class="btn primary" id="btnPasteRoster">📋 Paste roster</button>
           <button class="btn" id="btnClearNames">Clear names</button>
+        </div>
+        <div class="row" style="margin-bottom:9px">
+          <button class="btn" id="btnSquad" style="width:100%">👥 Squad database</button>
         </div>
         <div class="plist" id="starters"></div>
 
@@ -474,6 +560,12 @@ textarea.inp{resize:vertical;min-height:64px;font-size:12.5px}
         <div id="boardBox">
           <svg id="board" xmlns="http://www.w3.org/2000/svg" viewBox="-34 -34 1118 748"></svg>
           <input id="textInput" placeholder="Label…">
+          <div id="labelBar">
+            <span id="lbWhat"></span>
+            <input id="lbIn" maxlength="4" autocomplete="off" spellcheck="false" aria-label="Label for the selected object">
+            <input type="color" id="lbColor" aria-label="Colour of the selected object" title="Colour">
+            <button id="lbClear" title="Clear this label" aria-label="Clear this label">&times;</button>
+          </div>
         </div>
         <button id="btnZoomReset">⤢ Reset zoom</button>
         <div id="firstRun"></div>
@@ -487,6 +579,7 @@ textarea.inp{resize:vertical;min-height:64px;font-size:12.5px}
         <span><span class="kbd">V</span> select <span class="kbd">P</span> pen <span class="kbd">S</span> pass <span class="kbd">R</span> run <span class="kbd">Space</span> play <span class="kbd">⌘Z</span> undo <span class="kbd">?</span> all shortcuts</span>
       </div>
       <div id="drillBar"></div>
+      <div id="colorPop" class="mob-only" role="group" aria-label="Drawing colour"></div>
       <div id="dock" class="mob-only">
         <div id="dockScrollWrap"><div id="dockScroll" class="noscroll"></div></div>
         <div id="dockFixed"></div>
@@ -500,7 +593,9 @@ textarea.inp{resize:vertical;min-height:64px;font-size:12.5px}
 <div class="modal-bg" id="helpModal"><div class="modal" id="helpBody"></div></div>
 <div class="modal-bg" id="shareModal"><div class="modal" id="shareBody"></div></div>
 <div class="modal-bg" id="rosterModal"><div class="modal" id="rosterBody"></div></div>
+<div class="modal-bg" id="squadModal"><div class="modal wide" id="squadBody"></div></div>
 <input type="file" id="fileIn" accept=".json,application/json" style="display:none">
+<input type="file" id="csvIn" accept=".csv,.txt,text/csv" style="display:none">
 <script>
 /* ============================================================
    DATA — formations, team preset, drill library
@@ -2405,9 +2500,9 @@ const C = {
   opp:"#e2574c", neut:"#f5a524", mann:"#8b98a5", cone:"#ff8a3d",
   white:"#ffffff", zone:"#ffffff"
 };
-const PALETTE = [null,"#ffffff","#f5a524","#38bdf8","#ef4444","#37c86b","#c77dff","#111827"];
+const PALETTE = [null,"#ffffff","#f5a524","#38bdf8","#e2574c","#37c86b","#c77dff","#111827"];
 
-const BUILD = "2026-08-20 · my drills";
+const BUILD = "2026-08-24 · squad database";
 
 let uid = 1;
 const nid = () => "s" + (uid++);
@@ -2806,9 +2901,16 @@ window.addEventListener("resize", ()=>{
 });
 
 /* ---------- history ---------- */
+/* Undo used to restore only the drawing and the players, so loading a
+   saved line-up or switching formation could not be undone cleanly.
+   The rest of a board is a handful of scalars — cheap to carry. */
+const SNAP_KEYS = ["teamName","teamColor","squad","formIdx","view",
+                   "showNames","showNums","showPos","snap","numsEdited","label"];
 function snap(){
   const b=board();
-  return JSON.stringify({shapes:b.shapes, players:b.players||null, bench:b.bench||null});
+  const o={shapes:b.shapes, players:b.players||null, bench:b.bench||null};
+  SNAP_KEYS.forEach(k=>{ if(b[k]!==undefined) o[k]=b[k]; });
+  return JSON.stringify(o);
 }
 function pushHist(){
   const h=S.hist[S.tab];
@@ -2822,7 +2924,14 @@ function applySnap(str){
   b.shapes=d.shapes;
   if(d.players) b.players=d.players;
   if(d.bench) b.bench=d.bench;
-  S.sel=null; render(); if(S.tab==="lineup") renderRoster();
+  SNAP_KEYS.forEach(k=>{ if(d[k]!==undefined) b[k]=d[k]; });
+  S.sel=null;
+  if(S.tab==="lineup"){
+    if(typeof refreshLineupControls==="function") refreshLineupControls();
+    if(typeof buildBoardBar==="function") buildBoardBar();
+    renderRoster();
+  }
+  render();
 }
 function undo(){
   const h=S.hist[S.tab];
@@ -2893,7 +3002,7 @@ const TOOLS = [
    ["pass","Pass — solid arrow  (S)"],["run","Run — dashed arrow  (R)"],["carry","Dribble — wavy arrow  (D)"],
    ["curve","Curved arrow  (C)"],["shot","Shot"]],
   [["rect","Rectangle"],["ellipse","Circle"],["zone","Zone / grid"],["text","Text label  (T)"]],
-  [["mate","Our player"],["opp","Opponent"],["neut","Neutral player"],["mann","Mannequin"],
+  [["mate","Player — takes the colour you have picked"],["mann","Mannequin"],
    ["cone","Cone"],["disc","Flat disc"],["ball","Ball"],["goal","Mini goal"],["coach","Coach"]],
   [["eraser","Eraser  (E)"]]
 ];
@@ -2938,6 +3047,7 @@ function buildToolbar(){
     b.className="sw"+(S.color===c?" active":"")+(c===null?" auto":"");
     if(c) b.style.background=c;
     b.title = c ? c : "Auto — pass amber, run cyan, shot red";
+    b.setAttribute("aria-label", c ? ("Colour "+c) : "Automatic colour");
     if(c===null) b.textContent="A";
     b.onclick=()=>{ S.color=c; if(S.sel) applyToSel({c}); buildToolbar(); };
     cw.appendChild(b);
@@ -2949,6 +3059,7 @@ function buildToolbar(){
   [[3,4],[5,7],[8,11]].forEach(([w,px])=>{
     const b=document.createElement("button");
     b.className="wbtn"+(S.width===w?" active":""); b.title="Line width";
+    b.setAttribute("aria-label","Line width "+w);
     b.innerHTML=`<i style="width:${px}px;height:${px}px"></i>`;
     b.onclick=()=>{ S.width=w; if(S.sel) applyToSel({w}); buildToolbar(); };
     ww.appendChild(b);
@@ -2984,6 +3095,7 @@ function updateStatus(){
 
 /* ---------- pointer ---------- */
 let tmp=null, dragInfo=null, pan=null;
+let lastHit={id:null,t:0};      // for spotting a second tap on the same object
 const ptrs=new Map();      // live pointers, for pinch
 let pinch=null;
 
@@ -3051,9 +3163,19 @@ svg.addEventListener("pointerdown", e=>{
     const sg=e.target.closest("[data-sid]");
     if(sg){
       const s=board().shapes.find(x=>x.id===sg.dataset.sid);
+      // the board swallows the browser's own dblclick, so spot it ourselves:
+      // twice on the same object opens its label ready to type
+      const now=Date.now();
+      const twice = lastHit.id===s.id && (now-lastHit.t)<420;
+      lastHit={id:s.id, t:now};
       S.sel=s.id; pushHist();
       dragInfo={kind:"shape", id:s.id, last:p};
-      render(); return;
+      render();
+      if(twice && typeof labelKind==="function" && labelKind(s)){
+        // the browser hands focus back to the page after this event, so wait it out
+        setTimeout(()=>{ const lb=$("#lbIn"); if(lb){ lb.focus(); lb.select(); } }, 0);
+      }
+      return;
     }
     // empty space while zoomed in — drag to pan the board
     if(S.zoom.s>1.02){
@@ -3066,8 +3188,17 @@ svg.addEventListener("pointerdown", e=>{
   if(S.tool==="text"){ openTextInput(p, e); return; }
   if(PLACE.has(S.tool)){
     pushHist();
-    board().shapes.push({id:nid(), t:S.tool, p:[p],
-      c:(S.tool==="mate"?S.lineup.teamColor:null), o:null, w:S.width});
+    const put={id:nid(), t:S.tool, p:[p],
+      c:(S.tool==="mate"? S.color : null), o:null, w:S.width};
+    board().shapes.push(put);
+    // a player dropped on the board is nearly always about to get a number,
+    // so select it and put the cursor in the label box ready to type
+    if(typeof labelKind==="function" && labelKind(put)){
+      S.sel=put.id; render();
+      const lb=$("#lbIn");
+      if(lb && !S.phone){ lb.focus(); lb.select(); }
+      return;
+    }
     render(); return;
   }
   if(S.tool==="pen"){ tmp={id:nid(), t:"pen", p:[p], c:S.color, w:S.width, o:null}; return; }
@@ -3248,8 +3379,8 @@ function renderRoster(){
   L.players.forEach((p,i)=>{
     const row=document.createElement("div"); row.className="prow";
     row.innerHTML=`<span class="pos">${p.pos}</span>
-      <input class="num" value="${esc(p.num)}" maxlength="2" aria-label="number">
-      <input class="nm" value="${esc(p.name)}" placeholder="Player name" aria-label="name">`;
+      <input class="num" value="${esc(p.num)}" maxlength="2" aria-label="Shirt number">
+      <input class="nm" value="${esc(p.name)}" placeholder="Player name" aria-label="Player name">`;
     const [num,nm]=row.querySelectorAll("input");
     num.oninput=()=>{ p.num=num.value; S.lineup.numsEdited=true; linkPush(); render(); syncHash(); };
     nm.oninput =()=>{ p.name=nm.value; linkPush(); render(); updateStatus(); syncHash(); };
@@ -3262,8 +3393,8 @@ function renderRoster(){
     const row=document.createElement("div");
     row.className="prow"+(S.swapFrom===i?" sel":"");
     row.innerHTML=`<span class="grip" title="Tap the row, then tap a player on the pitch to swap">⇄</span>
-      <input class="num" value="${esc(p.num)}" maxlength="2">
-      <input class="nm" value="${esc(p.name)}" placeholder="Bench player">
+      <input class="num" value="${esc(p.num)}" maxlength="2" aria-label="Bench shirt number">
+      <input class="nm" value="${esc(p.name)}" placeholder="Bench player" aria-label="Bench player name">
       <button class="x" title="Remove">×</button>`;
     const [num,nm]=row.querySelectorAll("input");
     num.oninput=()=>{p.num=num.value; linkPush(); syncHash();};
@@ -3500,7 +3631,11 @@ function download(name, blob){
 }
 function saveFile(){
   const n=(S.lineup.teamName||"coach-board").replace(/[^\w-]+/g,"-").toLowerCase();
-  download(`${n}-board.json`, new Blob([serialize()],{type:"application/json"}));
+  // date-stamped so a folder of backups keeps its history instead of
+  // one file quietly overwriting the last one
+  const d=new Date(), pad=x=>String(x).padStart(2,"0");
+  const stamp=`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  download(`${n}-board-${stamp}.json`, new Blob([serialize()],{type:"application/json"}));
 }
 function openFile(data){
   try{ applyState(JSON.parse(data)); syncHash(); }
@@ -3646,6 +3781,30 @@ function openHelp(){
     <p>The 4-2-3-1 automations are your six-pattern offensive pack, carried over as written. The 3-5-2, 4-3-3 and 4-4-2 packs were built to the same template from the standard attacking principles of each shape. Everything below them — rondos, passing, footwork, duels and expanded play — is the drill library from the JV training plan. Edit or add to any of it.</p>
     <p style="color:#93a3b0;font-size:12px">${esc(TEAM_PRESET.note)}</p>
     <p style="color:#93a3b0;font-size:12px">Tip: the pitch is landscape by default. The tall-rectangle button in the toolbar flips it to vertical, attacking upward — the way your team documents draw it, and easier to read on a phone.</p>
+    <h4>Using the same data on your phone and your laptop</h4>
+    <p>There are no accounts and no server — everything lives on the device you are using, which is why the app works on a field with no signal. To carry your work to another device, hit <b>Save</b>. That writes ONE date-stamped file holding everything: your line-ups, your drills, your squad and your stats. Put it in iCloud Drive, Google Drive or Dropbox, then hit <b>Open</b> on the other device and pick it.</p>
+    <p><b>Open ADDS, it never replaces.</b> Anything already on the second device stays, and opening the same file twice does not duplicate anything — so it is safe to do whenever you want the two in step.</p>
+    <p class="hint">This is a manual sync, not a live one: change something on your phone and your laptop will not know until you carry a file over.</p>
+    <h4>Loading a roster from a spreadsheet</h4>
+    <p><b>Import a roster</b> in the Squad database reads a CSV, so a squad you already have in Excel or Sheets goes in at once instead of being typed. It finds Number, Name, Position, Goals, Assists and Saves columns under whatever names your sheet uses, understands positions written out in words (&ldquo;Right Back&rdquo; becomes FB), and copes with &ldquo;Alvarez, Mateo&rdquo; style names. It matches on shirt number first, then name, so re-importing an updated sheet tops players up instead of adding them twice.</p>
+    <h4>Squad database</h4>
+    <p>The <b>Squad database</b> button under Starting XI holds your actual players: shirt number, name, the positions each can play (GK, FB, CB, CM, WM, ST) and a running tally of goals, assists and saves. Tap a row to open it. It lives on this device with your drills and saved line-ups.</p>
+    <p>The quick way in is <b>Add everyone on this board</b> — it copies the names and numbers off the XI you have already built, so you are not typing everyone twice. It never adds the same player twice, and it ignores empty bench slots.</p>
+    <p><b>Fill this line-up from the squad</b> goes the other way. Choose what to match on: <b>shirt number</b> looks up each number on the board and writes in that player's name; <b>name</b> looks up each name and writes in his number. Anyone it cannot find is left alone and counted in the message, so nothing gets invented. Undo puts it back.</p>
+    <p class="hint">Stats are yours to keep however you like — the +/− buttons are there to top up after a game. <b>Export as a spreadsheet</b> writes a CSV you can open in Excel or Sheets.</p>
+    <h4>Saved line-ups</h4>
+    <p>Hit <b>Save this line-up</b> at the top of the Lineup tab and whatever is on the board you are editing gets put on the shelf — formation, every name and number, where each player is standing, the bench, the kit colour and anything you have drawn on top. It is named for you; type over the name in the list to change it.</p>
+    <p><b>Load</b> puts it back onto the board you are editing, so with two or three boards up you can pull a different XI onto each one. Loading replaces what was there, and undo (<b>&#8984;Z</b>, or the undo arrow on a phone) puts it back.</p>
+    <p class="hint">Saved line-ups live in this browser on this device, the same as your drills. They do not follow you to another phone or laptop, and clearing your browsing data removes them — use <b>Save</b> to keep a file if a line-up really matters. If <b>Link names</b> is on and you have more than one board up, loading a line-up also copies its names onto the other boards by shirt number.</p>
+    <h4>Players and colours</h4>
+    <p>There is one <b>Player</b> tool, not three. It drops a player in whatever colour is picked, so red is an opponent, amber is a neutral, and so on — the button itself shows the colour it will drop. Red on the palette is the exact red the built-in drills use for opponents, so yours match.</p>
+    <p><b>Auto</b> means "our team": those players follow the kit colour, so changing the kit changes them too. Any other pick is fixed to that colour.</p>
+    <p>To change something already drawn, click it with the <b>arrow</b> tool and use the colour circle in the box at the top left of the board — or click a swatch on the palette. Works on arrows too. The wheel at the end of the palette gives any colour you like.</p>
+    <p class="hint">On a phone the colour circle sits next to the undo arrow at the bottom right. One tap opens the strip, one tap picks, and it shows the colour you are drawing in.</p>
+    <h4>Numbers and letters on what you draw</h4>
+    <p>Click any player, pass or run with the <b>arrow</b> tool and a small box appears at the top left of the board. Type into it: a shirt number on a player, a number on a pass, a letter on a run. Click the same thing <b>twice</b> to jump straight into that box. Drop a new player on the board and the box is already waiting.</p>
+    <p>The <b>1&middot;2&middot;3</b> button on the toolbar does the whole board at once — every pass gets 1, 2, 3 and every run gets A, B, C, in the order you drew them. On a phone it is under the <b>&hellip;</b> button, called <b>Number the passes and runs</b>.</p>
+    <p class="hint">The badge on a pass or a run is not just decoration: <b>Play</b> follows those numbers. Renumber a pass and the animation reorders itself to match, which is also how you fix a drill that plays back in the wrong order.</p>
     <h4>Your own drills</h4>
     <p>Hit <b>New</b> in the Drills tab, draw it on the board, fill in the details under <b>Build</b>, then <b>Save</b>. It goes into your library and stays on this device — no link to keep and no file to remember.</p>
     <p>Every drill has an <b>Edit this drill</b> button, including the ones the app came with. Change the drawing, the sequence, the coaching points, whatever you like, and Save. Your version then replaces the original everywhere in the app, and it is marked <b>edited</b> in the list. <b>Revert to the original</b> throws your changes away and gives the built-in one back.</p>
@@ -3698,12 +3857,12 @@ function init(){
   const bs=$("#brandSub"); if(bs) bs.title="build "+BUILD;
 
   $$("#tabs button").forEach(b=> b.onclick=()=>switchTab(b.dataset.tab));
-  $("#teamName").oninput=e=>{ S.boards.forEach(b=>b.teamName=e.target.value); };
-  $("#squadSize").onchange=e=>{ const L=S.lineup; L.squad=+e.target.value; L.formIdx=0; buildFormationSelect(); applyFormation(false); };
+  $("#teamName").oninput=e=>{ S.boards.forEach(b=>b.teamName=e.target.value); updateStatus(); syncHash(); };
+  $("#squadSize").onchange=e=>{ const L=S.lineup; L.squad=+e.target.value; L.formIdx=0; buildFormationSelect(); applyFormation(false); render(); syncHash(); };
   $("#formation").onchange=e=>{ S.lineup.formIdx=+e.target.value; pushHist(); applyFormation(true); render(); };
-  $("#pitchView").onchange=e=>{ S.boards.forEach(b=>b.view=e.target.value); render(); updateStatus(); };
-  $("#teamColor").oninput=e=>{ S.boards.forEach(b=>b.teamColor=e.target.value); $("#teamColorTxt").value=e.target.value; render(); };
-  $("#teamColorTxt").oninput=e=>{ if(/^#[0-9a-f]{6}$/i.test(e.target.value)){ S.boards.forEach(b=>b.teamColor=e.target.value); $("#teamColor").value=e.target.value; render(); } };
+  $("#pitchView").onchange=e=>{ S.boards.forEach(b=>b.view=e.target.value); render(); updateStatus(); syncHash(); };
+  $("#teamColor").oninput=e=>{ S.boards.forEach(b=>b.teamColor=e.target.value); $("#teamColorTxt").value=e.target.value; render(); syncHash(); };
+  $("#teamColorTxt").oninput=e=>{ if(/^#[0-9a-f]{6}$/i.test(e.target.value)){ S.boards.forEach(b=>b.teamColor=e.target.value); $("#teamColor").value=e.target.value; render(); syncHash(); } };
   $("#btnReset").onclick=()=>{ pushHist(); applyFormation(true); render(); };
   $("#btnMirror").onclick=()=>{ pushHist(); S.lineup.players.forEach(p=>p.y=680-p.y); render(); };
   $("#btnPreset").onclick=()=>{ loadTeamPreset(); linkPush(); render(); };
@@ -3714,12 +3873,12 @@ function init(){
     L.players.forEach(p=>p.name=""); L.bench.forEach(p=>p.name="");
     linkPush(); renderRoster(); render(); updateStatus(); toast("Names cleared");
   };
-  $("#cmpLink").onchange=e=>{ S.linkNames=e.target.checked; if(S.linkNames){ linkPush(); render(); renderRoster(); } };
+  $("#cmpLink").onchange=e=>{ S.linkNames=e.target.checked; if(S.linkNames){ linkPush(); render(); renderRoster(); } syncHash(); };
   $("#btnCopyXI").onclick=copyActiveXIToAll;
   ["tgNames","tgNums","tgPos","tgSnap"].forEach(id=>{
     $("#"+id).onchange=e=>{
       S.lineup[{tgNames:"showNames",tgNums:"showNums",tgPos:"showPos",tgSnap:"snap"}[id]]=e.target.checked;
-      render();
+      render(); syncHash();
     };
   });
   $$("#drillSeg button").forEach(b=> b.onclick=()=>setSeg(b.dataset.seg));
@@ -3776,7 +3935,9 @@ function closeDrawer(){ $("#sidebar").classList.remove("open"); $("#backdrop").c
 function toggleDrawer(){ $("#sidebar").classList.contains("open") ? closeDrawer() : openDrawer(); }
 
 /* ---------- bottom dock ---------- */
-const DOCK = ["select","pen","run","pass","carry","curve","text","mate","opp","cone","ball","zone","eraser"];
+/* the four that fit without scrolling are the four a coach reaches for most
+   when building a drill: pick things up, drop players, pass, run */
+const DOCK = ["select","mate","pass","run","carry","curve","pen","text","cone","ball","zone","eraser"];
 const TOOL_LABEL = {select:"Select",pen:"Draw",line:"Line",pass:"Pass",run:"Run",carry:"Dribble",
   curve:"Curve",shot:"Shot",rect:"Box",ellipse:"Circle",zone:"Zone",text:"Label",mate:"Player",
   opp:"Opponent",neut:"Neutral",mann:"Mannequin",cone:"Cone",disc:"Disc",ball:"Ball",
@@ -3861,6 +4022,8 @@ function refreshSheet(){
   PALETTE.forEach(c=>{
     const b=document.createElement("button");
     b.className="sw"+(S.color===c?" active":"")+(c===null?" auto":"");
+    b.title = c ? c : "Auto — pass amber, run cyan, shot red";
+    b.setAttribute("aria-label", c ? ("Colour "+c) : "Automatic colour");
     b.style.cssText="width:38px;height:38px";
     if(c) b.style.background=c; else b.textContent="A";
     b.onclick=()=>{ S.color=c; if(S.sel) applyToSel({c}); buildToolbar(); buildDock(); refreshSheet(); };
@@ -3873,6 +4036,7 @@ function refreshSheet(){
   [[3,5],[5,9],[8,14]].forEach(([w,px])=>{
     const b=document.createElement("button");
     b.className="wbtn"+(S.width===w?" active":"");
+    b.title="Line width"; b.setAttribute("aria-label","Line width "+w);
     b.style.cssText="width:46px;height:40px";
     b.innerHTML=`<i style="width:${px}px;height:${px}px"></i>`;
     b.onclick=()=>{ S.width=w; if(S.sel) applyToSel({w}); buildToolbar(); refreshSheet(); };
@@ -4328,17 +4492,20 @@ const LIB_KEY = "coach-board.library.v1";
 
 function libSave(){
   try{
-    localStorage.setItem(LIB_KEY, JSON.stringify({v:1, custom:S.drills.custom}));
+    localStorage.setItem(LIB_KEY, JSON.stringify({v:2, custom:S.drills.custom, lineups:S.savedXI}));
     return true;
   }catch(err){ return false; }
 }
 function libLoad(){
   try{
     const raw = localStorage.getItem(LIB_KEY);
-    if(!raw) return [];
-    const o = JSON.parse(raw);
-    return Array.isArray(o && o.custom) ? o.custom : [];
-  }catch(err){ return []; }
+    if(!raw) return {custom:[], lineups:[]};
+    const o = JSON.parse(raw) || {};
+    return {
+      custom:  Array.isArray(o.custom)  ? o.custom  : [],
+      lineups: Array.isArray(o.lineups) ? o.lineups : []      // absent in the first version
+    };
+  }catch(err){ return {custom:[], lineups:[]}; }
 }
 /* drills arriving on a share link are ADDED, never allowed to
    overwrite something already in this coach's library */
@@ -4351,7 +4518,9 @@ function libMerge(list){
   return n;
 }
 
-S.drills.custom = libLoad();
+const _lib0 = libLoad();
+S.drills.custom = _lib0.custom;
+S.savedXI = _lib0.lineups;
 
 /* ---------- the library, with overrides folded in ---------- */
 function allDrills(){
@@ -4373,19 +4542,19 @@ function drillForm(src){
   const v  = k => esc(src && src[k] != null ? src[k] : "");
   const ln = k => esc((((src && src[k]) || [])).join("\n"));
   $("#drillEdit").innerHTML = `
-    <div class="field"><label>Drill name</label><input class="inp" id="edName" value="${v("name")}" placeholder="e.g. Wide overload 3v2"></div>
+    <div class="field"><label>Drill name</label><input class="inp" id="edName" aria-label="Drill name" value="${v("name")}" placeholder="e.g. Wide overload 3v2"></div>
     <div class="row">
-      <div class="field"><label>Category</label><input class="inp" id="edCat" value="${src && src.cat ? esc(src.cat) : "My Drills"}"></div>
-      <div class="field"><label>Duration</label><input class="inp" id="edDur" value="${v("dur")}" placeholder="12 min"></div>
+      <div class="field"><label>Category</label><input class="inp" id="edCat" aria-label="Category" value="${src && src.cat ? esc(src.cat) : "My Drills"}"></div>
+      <div class="field"><label>Duration</label><input class="inp" id="edDur" aria-label="Duration" value="${v("dur")}" placeholder="12 min"></div>
     </div>
     <div class="row">
-      <div class="field"><label>Players</label><input class="inp" id="edPl" value="${v("players")}" placeholder="8-12"></div>
-      <div class="field"><label>Area</label><input class="inp" id="edArea" value="${v("area")}" placeholder="30 x 25"></div>
+      <div class="field"><label>Players</label><input class="inp" id="edPl" aria-label="Players" value="${v("players")}" placeholder="8-12"></div>
+      <div class="field"><label>Area</label><input class="inp" id="edArea" aria-label="Area" value="${v("area")}" placeholder="30 x 25"></div>
     </div>
     <div class="field"><label>Set-up</label><textarea class="inp" id="edSetup" placeholder="How to lay it out…">${v("setup")}</textarea></div>
     ${ED_LINES.map(([id,key,label]) =>
       `<div class="field"><label>${label}</label><textarea class="inp" id="${id}">${ln(key)}</textarea></div>`).join("")}
-    <div class="field"><label>Key constraint</label><input class="inp" id="edKey" value="${v("key")}"></div>`;
+    <div class="field"><label>Key constraint</label><input class="inp" id="edKey" aria-label="Key constraint" value="${v("key")}"></div>`;
 }
 
 function newDrill(){
@@ -4501,6 +4670,970 @@ applyState = function(d){
       toast(n === 1 ? "1 drill added to your library" : n + " drills added to your library");
     }
   }
+};
+
+/* ============================================================
+   LABELS — put a number or letter on anything you draw.
+
+   The renderer already knew how to draw these; nothing on the
+   screen let a coach set them. Two things live here:
+
+     1. A label bar that appears whenever a drawn object is
+        selected. Player tokens get the number on the shirt;
+        passes get ①②③; runs get A B C.
+     2. "Number them" — walks everything on the board in the
+        order it was drawn and stamps the passes 1,2,3… and the
+        runs A,B,C…, exactly the way the built-in drills are laid
+        out.
+
+   The badge on a pass or a run is NOT decoration. buildPlan()
+   sorts playback by it, so numbering a drill is also what puts
+   the animation in the right order.
+   ============================================================ */
+const LBL_TOKEN = new Set(["mate","opp","neut","mann"]);
+const isRunShape  = s => !!s && (s.t === "run" || (s.t === "curve" && s.o && s.o.st === "run"));
+const isBallShape = s => !!s && (["pass","carry","dribble","shot"].indexOf(s.t) >= 0 ||
+                                 (s.t === "curve" && !(s.o && s.o.st === "run")));
+
+function labelKind(s){
+  if(!s) return null;
+  if(LBL_TOKEN.has(s.t)) return {key:"t", what:"Player", ph:"9", hint:"The number or letter on the shirt"};
+  if(s.t === "text")     return {key:"t", what:"Text",   ph:"",  hint:"The words written on the pitch"};
+  if(isRunShape(s))      return {key:"n", what:"Run",    ph:"A", hint:"A letter — this also sets the order it plays back in"};
+  if(isBallShape(s))     return {key:"n", what:"Pass",   ph:"1", hint:"A number — this also sets the order it plays back in"};
+  return null;
+}
+function selShape(){
+  if(!S.sel) return null;
+  return (board().shapes || []).find(x => x.id === S.sel) || null;
+}
+
+function syncLabelBar(){
+  const bar = $("#labelBar"); if(!bar) return;
+  const inp = $("#lbIn"), what = $("#lbWhat");
+  const s = selShape(), k = labelKind(s);
+  if(!k){ bar.classList.remove("on"); return; }
+  bar.classList.add("on");
+  what.textContent = k.what;
+  inp.placeholder  = k.ph;
+  bar.title = k.hint;
+  // never overwrite what the coach is in the middle of typing
+  if(document.activeElement !== inp) inp.value = (s.o && s.o[k.key]) || "";
+}
+
+function setLabel(v){
+  const s = selShape(), k = labelKind(s); if(!k) return;
+  s.o = s.o || {};
+  if(v) s.o[k.key] = v; else delete s.o[k.key];
+  render(); syncHash();
+}
+
+/* stamp the whole board the way the built-in drills are laid out */
+function numberSequence(){
+  const sh = board().shapes || [];
+  const balls = sh.filter(isBallShape);
+  const runs  = sh.filter(isRunShape);
+  if(!balls.length && !runs.length){ toast("Draw some passes or runs first"); return; }
+  pushHist();
+  balls.forEach((s,i)=>{ s.o = s.o || {}; s.o.n = String(i+1); });
+  runs.forEach((s,i)=>{ s.o = s.o || {}; s.o.n = String.fromCharCode(65 + (i % 26)); });
+  render(); syncHash();
+  const bit = (n,one,many) => n + " " + (n === 1 ? one : many);
+  toast("Numbered " + bit(balls.length,"pass","passes") + " and " + bit(runs.length,"run","runs"));
+}
+
+/* ---------- wiring ---------- */
+(function(){
+  const inp = $("#lbIn"); if(!inp) return;
+  inp.addEventListener("focus", ()=>{ pushHist(); });
+  inp.addEventListener("input", ()=> setLabel(inp.value.trim()));
+  inp.addEventListener("keydown", e=>{
+    e.stopPropagation();
+    if(e.key === "Enter" || e.key === "Escape") inp.blur();
+  });
+  const cl = $("#lbClear");
+  if(cl) cl.onclick = ()=>{ pushHist(); inp.value = ""; setLabel(""); inp.focus(); };
+
+  /* tapping an object twice focuses this field — see the select tool in 04_ui */
+})();
+
+/* the bar follows the selection, and the selection changes inside render() */
+const _renderLbl = render;
+render = function(){ _renderLbl(); syncLabelBar(); };
+
+/* a "Number them" button on the desktop toolbar … */
+const _buildToolbarLbl = buildToolbar;
+buildToolbar = function(){
+  _buildToolbarLbl();
+  const tb = $("#toolbar"); if(!tb) return;
+  const g = document.createElement("div"); g.className = "tgroup";
+  const b = document.createElement("button");
+  b.className = "tool"; b.style.fontSize = "11px"; b.style.fontWeight = "800";
+  b.title = "Number them — passes get 1, 2, 3 and runs get A, B, C, in the order you drew them";
+  b.setAttribute("aria-label", "Number the passes and runs");
+  b.textContent = "1·2·3";
+  b.onclick = numberSequence;
+  g.appendChild(b);
+  const hist = tb.querySelector(".tgroup");
+  if(hist && hist.nextSibling) tb.insertBefore(g, hist.nextSibling); else tb.appendChild(g);
+};
+
+/* … and the same thing in the phone's tool sheet */
+const _refreshSheetLbl = refreshSheet;
+refreshSheet = function(){
+  _refreshSheetLbl();
+  const bg = $("#sheetBg");
+  if(!bg || !bg.classList.contains("open") || sheetMode !== "tools") return;
+  const s = $("#sheet"); if(!s || s.querySelector("#shNumber")) return;
+  const h = document.createElement("div"); h.className = "sheet-h";
+  h.textContent = "Numbering";
+  const b = document.createElement("button");
+  b.className = "btn"; b.id = "shNumber";
+  b.style.cssText = "width:100%;padding:12px;margin-top:4px";
+  b.textContent = "Number the passes and runs";
+  b.onclick = ()=>{ numberSequence(); closeSheet(); };
+  const grid = s.querySelector(".toolgrid");
+  if(grid && grid.nextSibling){ s.insertBefore(h, grid.nextSibling); s.insertBefore(b, h.nextSibling); }
+  else { s.appendChild(h); s.appendChild(b); }
+};
+
+syncLabelBar();
+
+/* ============================================================
+   COLOUR — one Player tool, and the colour comes from the picker.
+
+   There used to be three player buttons (ours / opponent / neutral)
+   which is really one object with three colours. Now there is one
+   Player button; whatever colour is picked is the colour it lands
+   in, and Auto means "follow the kit colour" so those tokens track
+   the team's kit if it changes later.
+
+   Anything already drawn can be recoloured by selecting it and
+   picking a colour — including from the wheel, which matters most
+   on a phone where the swatch row is two taps away inside a sheet.
+   ============================================================ */
+const COLOURABLE = new Set(["mate","opp","neut","mann","cone","disc","goal","coach",
+                            "pass","run","carry","dribble","shot","curve","line","pen",
+                            "rect","ellipse","text"]);
+
+function shapeColour(s){
+  if(!s) return null;
+  if(s.c) return s.c;
+  if(s.t === "mate") return S.lineup.teamColor;
+  if(s.t === "opp")  return C.opp;
+  if(s.t === "neut") return C.neut;
+  if(isRunShape(s))  return C.run;
+  if(s.t === "shot") return C.shot;
+  if(isBallShape(s)) return C.pass;
+  return "#ffffff";
+}
+function setSelColour(c){
+  const s = selShape(); if(!s) return;
+  s.c = c; render(); syncHash();
+}
+/* keep the Player button showing what colour it will drop */
+function tintPlayerTool(){
+  const tint = S.color || S.lineup.teamColor;
+  const b = document.querySelector('#toolbar [data-tool="mate"]');
+  if(b) b.style.color = tint;
+  document.querySelectorAll('#dockScroll .dtool').forEach(n=>{
+    if(n.getAttribute("aria-label") === "Player") n.style.color = tint;
+  });
+}
+/* a colour input that edits the selection live, and can be undone in one step */
+function wireColourInput(node, onPick, onOpen){
+  node.addEventListener("click", ()=>{ if(onOpen) onOpen(); });
+  node.addEventListener("input", ()=> onPick(node.value));
+  node.addEventListener("change", ()=> onPick(node.value));
+}
+
+(function(){
+  const lbc = $("#lbColor"); if(!lbc) return;
+  wireColourInput(lbc,
+    v => setSelColour(v),
+    () => { if(S.sel) pushHist(); });
+})();
+
+/* show the current colour of whatever is selected */
+const _syncLabelBarColour = syncLabelBar;
+syncLabelBar = function(){
+  _syncLabelBarColour();
+  const bar = $("#labelBar"), lbc = $("#lbColor");
+  if(!bar || !lbc) return;
+  const s = selShape();
+  const show = !!s && COLOURABLE.has(s.t) && bar.classList.contains("on");
+  lbc.style.display = show ? "" : "none";
+  if(show && document.activeElement !== lbc){
+    const c = shapeColour(s);
+    if(/^#[0-9a-f]{6}$/i.test(c)) lbc.value = c;
+  }
+};
+
+/* a wheel on the end of the desktop palette */
+const _buildToolbarColour = buildToolbar;
+buildToolbar = function(){
+  _buildToolbarColour();
+  const row = document.querySelector("#toolbar .colors");
+  if(row && !row.querySelector(".swwheel")){
+    const w = document.createElement("input");
+    w.type = "color"; w.className = "swwheel";
+    w.title = "Any colour"; w.setAttribute("aria-label", "Pick any colour");
+    w.value = S.color && /^#[0-9a-f]{6}$/i.test(S.color) ? S.color : "#e2574c";
+    wireColourInput(w,
+      v => {
+        S.color = v;
+        row.querySelectorAll(".sw").forEach(n=>n.classList.remove("active"));
+        if(S.sel) setSelColour(v);
+        tintPlayerTool();
+      },
+      () => { if(S.sel) pushHist(); });
+    row.appendChild(w);
+  }
+  tintPlayerTool();
+};
+
+/* and the same wheel in the phone's colour sheet */
+const _refreshSheetColour = refreshSheet;
+refreshSheet = function(){
+  _refreshSheetColour();
+  const bg = $("#sheetBg");
+  if(!bg || !bg.classList.contains("open") || sheetMode !== "tools") return;
+  const s = $("#sheet"); if(!s || s.querySelector("#shWheel")) return;
+  const rows = [...s.querySelectorAll("div")].filter(n => n.querySelector(".sw"));
+  const row = rows[0]; if(!row) return;
+  const w = document.createElement("input");
+  w.type = "color"; w.id = "shWheel"; w.className = "swwheel";
+  w.style.cssText = "width:38px;height:38px";
+  w.setAttribute("aria-label", "Pick any colour"); w.title = "Any colour";
+  w.value = S.color && /^#[0-9a-f]{6}$/i.test(S.color) ? S.color : "#e2574c";
+  wireColourInput(w,
+    v => {
+      S.color = v;
+      row.querySelectorAll(".sw").forEach(n=>n.classList.remove("active"));
+      if(S.sel) setSelColour(v);
+      tintPlayerTool();
+    },
+    () => { if(S.sel) pushHist(); });
+  row.appendChild(w);
+};
+
+
+/* ---- phone: a colour chip in the dock ------------------------------------
+   Collapsing three player buttons into one saved a lot of clutter but put the
+   colour two taps deep inside the tool sheet, which made dropping an opponent
+   slower than it used to be. The chip sits next to Undo, always shows the
+   colour that will be drawn, and opens a strip right above the dock.        */
+function colourPopOpen(){ return !!($("#colorPop") && $("#colorPop").classList.contains("on")); }
+function closeColourPop(){ const n=$("#colorPop"); if(n) n.classList.remove("on"); }
+
+function buildColourPop(){
+  const pop = $("#colorPop"); if(!pop) return;
+  pop.innerHTML = "";
+  PALETTE.forEach(c=>{
+    const b = document.createElement("button");
+    b.className = "sw"+(S.color===c?" active":"")+(c===null?" auto":"");
+    if(c) b.style.background = c; else b.textContent = "A";
+    b.title = c ? c : "Auto";
+    b.setAttribute("aria-label", c ? ("Colour "+c) : "Automatic colour");
+    b.onclick = ()=>{
+      if(S.sel) pushHist();
+      S.color = c;
+      if(S.sel && c) setSelColour(c);
+      closeColourPop(); buildDock(); buildToolbar(); tintPlayerTool();
+    };
+    pop.appendChild(b);
+  });
+  const w = document.createElement("input");
+  w.type = "color"; w.className = "swwheel";
+  w.setAttribute("aria-label","Pick any colour"); w.title = "Any colour";
+  w.value = S.color && /^#[0-9a-f]{6}$/i.test(S.color) ? S.color : "#e2574c";
+  wireColourInput(w,
+    v => { S.color = v; if(S.sel) setSelColour(v); buildDock(); tintPlayerTool(); },
+    () => { if(S.sel) pushHist(); });
+  pop.appendChild(w);
+}
+
+function toggleColourPop(){
+  const pop = $("#colorPop"), dock = $("#dock");
+  if(!pop || !dock) return;
+  if(colourPopOpen()){ closeColourPop(); return; }
+  buildColourPop();
+  pop.classList.add("on");
+  const r = dock.getBoundingClientRect();
+  pop.style.bottom = (window.innerHeight - r.top + 8) + "px";
+}
+
+const _buildDockColour = buildDock;
+buildDock = function(){
+  _buildDockColour();
+  const fx = $("#dockFixed"); if(!fx) return;
+  if(!fx.querySelector("#dockColour")){
+    const b = document.createElement("button");
+    b.className = "dtool chip"; b.id = "dockColour";
+    b.title = "Drawing colour"; b.setAttribute("aria-label","Drawing colour");
+    b.innerHTML = "<i></i>";
+    b.onclick = toggleColourPop;
+    fx.insertBefore(b, fx.firstChild);
+  }
+  const chip = fx.querySelector("#dockColour i");
+  if(chip) chip.style.background = S.color ||
+    "conic-gradient(#f5a524,#38bdf8,#e2574c,#37c86b,#f5a524)";
+  tintPlayerTool();
+};
+
+/* the strip is transient — anything else the coach does closes it */
+document.addEventListener("pointerdown", e=>{
+  if(!colourPopOpen()) return;
+  if(e.target.closest("#colorPop") || e.target.closest("#dockColour")) return;
+  closeColourPop();
+}, true);
+window.addEventListener("resize", closeColourPop);
+
+
+/* setTool() drops the selection but only redraws the handles, so the label bar
+   was left hanging over the board with nothing selected. */
+const _setToolLbl = setTool;
+setTool = function(t){ _setToolLbl(t); syncLabelBar(); };
+
+/* ============================================================
+   SAVED LINE-UPS — a shelf in the app for starting XIs.
+
+   One click saves whatever is on the active board: formation,
+   every player's name, number and exact position, the bench, the
+   kit colour, the pitch view and anything drawn on top. It lands
+   in the same device storage the drill library uses, so it is
+   there next time the app opens.
+
+   Restoring drops the saved board back onto whichever board is
+   active, and pushes history first so ⌘Z undoes it.
+   ============================================================ */
+
+/* everything that makes a board a line-up */
+function snapshotBoard(b){
+  return JSON.parse(JSON.stringify({
+    label:b.label, view:b.view, squad:b.squad, formIdx:b.formIdx,
+    teamName:b.teamName, teamColor:b.teamColor,
+    players:b.players, bench:b.bench,
+    showNames:b.showNames, showNums:b.showNums, showPos:b.showPos, snap:b.snap,
+    numsEdited:!!b.numsEdited,
+    shapes:b.shapes || []
+  }));
+}
+
+function xiDefaultName(){
+  const L = S.lineup;
+  const team = (L.teamName || "").trim();
+  const f = (FORMATIONS[L.squad] || [])[L.formIdx];
+  // formation labels carry a "★ team shape" suffix — keep just the shape
+  const shape = f ? String(f.n).split("\u2605")[0].trim() : "";
+  let base = [team, shape].filter(Boolean).join(" · ") || "Line-up";
+  const taken = new Set(S.savedXI.map(x => x.name));
+  if(!taken.has(base)) return base;
+  let n = 2;
+  while(taken.has(base + " (" + n + ")")) n++;
+  return base + " (" + n + ")";
+}
+
+function saveCurrentXI(){
+  const entry = {
+    id: "L" + Date.now(),
+    name: xiDefaultName(),
+    at: new Date().toISOString(),
+    board: snapshotBoard(S.lineup)
+  };
+  S.savedXI.unshift(entry);              // newest first
+  const kept = libSave();
+  renderXIList(); syncHash();
+  toast(kept ? "Line-up saved — rename it in the list if you like"
+             : "Saved for now, but this browser will not let the app store it. Use Save to keep a file.");
+  // put the cursor in the new row's name so it can be renamed straight away
+  const inp = $('#luList .lurow[data-xi="' + entry.id + '"] .lunm');
+  if(inp && !S.phone){ inp.focus(); inp.select(); }
+}
+
+function restoreXI(id){
+  const e = S.savedXI.find(x => x.id === id); if(!e) return;
+  pushHist();
+  const b = S.lineup, src = JSON.parse(JSON.stringify(e.board));
+  ["view","squad","formIdx","teamName","teamColor","players","bench",
+   "showNames","showNums","showPos","snap","numsEdited","shapes"].forEach(k=>{
+     if(src[k] !== undefined) b[k] = src[k];
+   });
+  if(S.linkNames && typeof linkPush === "function") linkPush();
+  refreshLineupControls();
+  if(typeof buildBoardBar === "function") buildBoardBar();
+  renderRoster(); render(); updateStatus(); syncHash();
+  toast(S.linkNames && S.boards.length > 1
+    ? "Loaded " + e.name + " — names copied to the other boards"
+    : "Loaded " + e.name);
+}
+
+function deleteXI(id){
+  const e = S.savedXI.find(x => x.id === id);
+  S.savedXI = S.savedXI.filter(x => x.id !== id);
+  libSave(); renderXIList(); syncHash();
+  toast(e ? "Deleted " + e.name : "Deleted");
+}
+
+function whenSaved(iso){
+  const t = Date.parse(iso);
+  if(isNaN(t)) return "";
+  const mins = Math.round((Date.now() - t) / 60000);
+  if(mins < 1)    return "just now";
+  if(mins < 60)   return mins + "m ago";
+  const hrs = Math.round(mins / 60);
+  if(hrs < 24)    return hrs + "h ago";
+  const days = Math.round(hrs / 24);
+  if(days < 7)    return days + "d ago";
+  return new Date(t).toLocaleDateString(undefined, {month:"short", day:"numeric"});
+}
+
+function renderXIList(){
+  const list = $("#luList"); if(!list) return;
+  const count = $("#luCount"), hint = $("#luHint");
+  if(count) count.textContent = S.savedXI.length;
+  list.innerHTML = "";
+
+  if(!S.savedXI.length){
+    if(hint) hint.textContent = "Nothing saved yet — build an XI and hit Save.";
+    return;
+  }
+  // a phone has no ⌘Z — point at the undo button instead
+  if(hint) hint.textContent = "Loading one replaces whatever is on the board you are editing. "
+    + (S.phone ? "The undo arrow puts it back." : "⌘Z puts it back.");
+
+  S.savedXI.forEach(e=>{
+    const row = document.createElement("div");
+    row.className = "lurow"; row.dataset.xi = e.id;
+
+    const nm = document.createElement("input");
+    nm.className = "lunm"; nm.value = e.name; nm.setAttribute("aria-label","Line-up name");
+    nm.oninput = ()=>{ e.name = nm.value; libSave(); syncHash(); };
+    row.appendChild(nm);
+
+    const meta = document.createElement("span");
+    meta.className = "lumeta"; meta.textContent = whenSaved(e.at);
+    meta.title = e.at ? new Date(e.at).toLocaleString() : "";
+    row.appendChild(meta);
+
+    const load = document.createElement("button");
+    load.className = "btn sm"; load.textContent = "Load";
+    load.title = "Put this line-up onto the board you are editing";
+    load.onclick = ()=> restoreXI(e.id);
+    row.appendChild(load);
+
+    const del = document.createElement("button");
+    del.className = "btn danger sm lubin"; del.innerHTML = "&times;";
+    del.title = "Delete " + e.name;
+    del.setAttribute("aria-label", "Delete " + e.name);
+    del.onclick = ()=> deleteXI(e.id);
+    row.appendChild(del);
+
+    list.appendChild(row);
+  });
+}
+
+/* line-ups on a share link are ADDED, the same way drills are */
+function xiMerge(list){
+  const have = new Set(S.savedXI.map(x => x && x.id));
+  let n = 0;
+  (list||[]).forEach(x=>{
+    if(x && x.id && x.board && !have.has(x.id)){ S.savedXI.push(x); have.add(x.id); n++; }
+  });
+  return n;
+}
+
+const _stateObjXI = stateObj;
+stateObj = function(){
+  const o = _stateObjXI();
+  o.savedXI = S.savedXI;
+  return o;
+};
+const _applyStateXI = applyState;
+applyState = function(d){
+  const incoming = (d && Array.isArray(d.savedXI)) ? d.savedXI : null;
+  _applyStateXI(d);
+  if(incoming && xiMerge(incoming)) libSave();
+  renderXIList();
+};
+
+const btnXI = $("#btnSaveXI");
+if(btnXI) btnXI.onclick = saveCurrentXI;
+renderXIList();
+
+/* ============================================================
+   SQUAD DATABASE — the coach's actual players, kept on this device.
+
+   One record per player: shirt number, name, the positions he can
+   play, and a running tally of goals, assists and saves. It lives in
+   the same device storage as the drills and the saved line-ups.
+
+   The point of it is the two arrows between here and a board:
+
+     FILL   take the squad and write it onto the line-up, matching
+            either on shirt number or on name. Matching on number
+            fills in the names; matching on name fills in the numbers.
+     PULL   take whoever is already on the board and add them to the
+            squad, so a coach can seed the database from an XI he has
+            already built rather than typing everyone in twice.
+
+   Nothing here ever silently overwrites: FILL only writes into a
+   slot it found a match for, and PULL never duplicates a player who
+   is already on file.
+   ============================================================ */
+const POSITIONS = ["GK","FB","CB","CM","WM","ST"];
+const POS_LONG = { GK:"Goalkeeper", FB:"Full back", CB:"Centre back",
+                   CM:"Centre midfield", WM:"Wide midfield", ST:"Striker" };
+const STATS = [["g","Goals"],["a","Assists"],["sv","Saves"]];
+
+let sqOpen = null;          // which row is expanded
+let sqMatchBy = "num";      // "num" or "name"
+
+function squadNew(seed){
+  return Object.assign({ id:"P"+Date.now()+Math.floor(Math.random()*1e4).toString(36),
+                         num:"", name:"", pos:[], g:0, a:0, sv:0 }, seed||{});
+}
+const sqKey = v => String(v==null?"":v).trim().toLowerCase();
+const sqNum = v => String(v==null?"":v).trim();
+
+function squadSort(){
+  S.squad.sort((a,b)=>{
+    const na = parseInt(a.num,10), nb = parseInt(b.num,10);
+    const aa = isNaN(na) ? 1e6 : na, bb = isNaN(nb) ? 1e6 : nb;
+    if(aa !== bb) return aa - bb;
+    return (a.name||"").localeCompare(b.name||"");
+  });
+}
+
+/* ---------- writing between the squad and a board ---------- */
+function slotsOf(board){
+  return (board.players||[]).map((p,i)=>({p, kind:"starter", i}))
+    .concat((board.bench||[]).map((p,i)=>({p, kind:"bench", i})));
+}
+function fillFromSquad(){
+  const b = S.lineup, slots = slotsOf(b);
+  if(!S.squad.length){ toast("The squad is empty — add players first"); return; }
+  const by = sqMatchBy;
+  const idx = new Map();
+  S.squad.forEach(r=>{
+    const k = by === "num" ? sqNum(r.num) : sqKey(r.name);
+    if(k && !idx.has(k)) idx.set(k, r);          // first match wins
+  });
+  pushHist();
+  let hit = 0, miss = 0;
+  slots.forEach(({p, kind})=>{
+    const k = by === "num" ? sqNum(p.num) : sqKey(p.name);
+    if(!k){ return; }
+    const r = idx.get(k);
+    if(!r){
+      // spare bench slots carry a default number nobody asked to fill —
+      // only report a miss for someone the coach actually put on the sheet
+      if(kind === "starter" || (p.name||"").trim()) miss++;
+      return;
+    }
+    if(by === "num"){ if(r.name) p.name = r.name; }
+    else            { if(r.num)  p.num  = r.num;  }
+    hit++;
+  });
+  if(typeof linkPush === "function") linkPush();
+  renderRoster(); render(); updateStatus(); syncHash();
+  const what = by === "num" ? "name" : "number";
+  toast(hit
+    ? `Filled ${hit} ${what}${hit===1?"":"s"}` + (miss ? ` — ${miss} not in the squad` : "")
+    : `No matches by ${by === "num" ? "shirt number" : "name"}`);
+}
+function pullIntoSquad(){
+  const b = S.lineup;
+  const byNum  = new Map(S.squad.map(r=>[sqNum(r.num), r]).filter(x=>x[0]));
+  const byName = new Map(S.squad.map(r=>[sqKey(r.name), r]).filter(x=>x[0]));
+  let added = 0, merged = 0;
+  slotsOf(b).forEach(({p})=>{
+    const n = sqNum(p.num), nm = (p.name||"").trim();
+    // an unused bench slot still carries a default shirt number, so a name is
+    // what makes a slot a person worth putting on file
+    if(!nm) return;
+    const found = (n && byNum.get(n)) || (nm && byName.get(sqKey(nm)));
+    if(found){
+      let touched = false;
+      if(!found.name && nm){ found.name = nm; touched = true; }
+      if(!found.num && n){ found.num = n; touched = true; }
+      if(touched) merged++;
+      return;
+    }
+    const rec = squadNew({ num:n, name:nm });
+    S.squad.push(rec);
+    if(n) byNum.set(n, rec);
+    if(nm) byName.set(sqKey(nm), rec);
+    added++;
+  });
+  squadSort(); libSave(); renderSquad(); syncHash();
+  toast(added || merged
+    ? `Added ${added}` + (merged ? `, filled in ${merged}` : "")
+    : "Everyone on this board is already on file");
+}
+
+/* ---------- csv, so the stats can go into a spreadsheet ---------- */
+function squadCsv(){
+  const esc = v => {
+    const s = String(v==null?"":v);
+    return /[",\n]/.test(s) ? '"' + s.replace(/"/g,'""') + '"' : s;
+  };
+  const rows = [["Number","Name","Positions","Goals","Assists","Saves"]];
+  S.squad.forEach(r=> rows.push([r.num, r.name, (r.pos||[]).join(" "), r.g|0, r.a|0, r.sv|0]));
+  return rows.map(r=>r.map(esc).join(",")).join("\n");
+}
+function downloadSquadCsv(){
+  if(!S.squad.length){ toast("Nothing to export yet"); return; }
+  const blob = new Blob([squadCsv()], {type:"text/csv;charset=utf-8"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = ((S.lineup.teamName||"squad").replace(/[^a-z0-9]+/gi,"-").toLowerCase()) + "-squad.csv";
+  document.body.appendChild(a); a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 400);
+  toast("Squad exported as a spreadsheet file");
+}
+
+/* ---------- the modal ---------- */
+function renderSquad(){
+  const list = $("#sqList"); if(!list) return;
+  const empty = $("#sqEmpty"), count = $("#sqCount");
+  if(count) count.textContent = S.squad.length;
+  list.innerHTML = "";
+  if(empty) empty.style.display = S.squad.length ? "none" : "block";
+
+  S.squad.forEach(r=>{
+    const row = document.createElement("div");
+    row.className = "sqrow" + (sqOpen === r.id ? " open" : "");
+    row.dataset.pid = r.id;
+
+    const head = document.createElement("div");
+    head.className = "sqhead";
+    head.setAttribute("role","button"); head.tabIndex = 0;
+    head.setAttribute("aria-expanded", sqOpen === r.id ? "true" : "false");
+    const posBits = (r.pos||[]).map(p=>`<span class="pchip">${p}</span>`).join("");
+    head.innerHTML =
+      `<span class="sqnum">${esc(r.num||"–")}</span>` +
+      `<span class="sqnm">${esc(r.name||"(no name yet)")}</span>` +
+      `<span class="sqpos">${posBits}</span>` +
+      `<span class="sqst">G${r.g|0} A${r.a|0} S${r.sv|0}</span>`;
+    const toggle = ()=>{ sqOpen = (sqOpen === r.id) ? null : r.id; renderSquad(); };
+    head.onclick = toggle;
+    head.onkeydown = e=>{ if(e.key === "Enter" || e.key === " "){ e.preventDefault(); toggle(); } };
+    row.appendChild(head);
+
+    const body = document.createElement("div");
+    body.className = "sqbody";
+    body.innerHTML = `
+      <div class="row" style="margin-bottom:8px">
+        <div class="field" style="flex:0 0 88px;margin:0"><label>Number</label>
+          <input class="inp sqf-num" value="${esc(r.num)}" maxlength="2" inputmode="numeric" aria-label="Shirt number"></div>
+        <div class="field" style="margin:0"><label>Name</label>
+          <input class="inp sqf-name" value="${esc(r.name)}" placeholder="Player name" aria-label="Player name"></div>
+      </div>
+      <label style="font-size:10px;font-weight:800;letter-spacing:.08em;color:var(--muted);text-transform:uppercase">Positions</label>
+      <div class="sqposrow"></div>
+      <div class="statrow"></div>
+      <div class="row" style="margin-top:12px;justify-content:flex-end">
+        <button class="btn danger sm sqf-del">Remove from squad</button>
+      </div>`;
+
+    const posRow = body.querySelector(".sqposrow");
+    POSITIONS.forEach(code=>{
+      const b = document.createElement("button");
+      const on = (r.pos||[]).indexOf(code) >= 0;
+      b.className = "pbtn" + (on ? " on" : "");
+      b.textContent = code;
+      b.title = POS_LONG[code];
+      b.setAttribute("aria-pressed", on ? "true" : "false");
+      b.onclick = ()=>{
+        r.pos = r.pos || [];
+        const i = r.pos.indexOf(code);
+        if(i >= 0) r.pos.splice(i,1); else r.pos.push(code);
+        r.pos.sort((x,y)=>POSITIONS.indexOf(x)-POSITIONS.indexOf(y));
+        libSave(); renderSquad(); syncHash();
+      };
+      posRow.appendChild(b);
+    });
+
+    const statRow = body.querySelector(".statrow");
+    STATS.forEach(([key,label])=>{
+      const wrap = document.createElement("div");
+      wrap.className = "stat";
+      wrap.innerHTML = `<label>${label}</label>`;
+      const dec = document.createElement("button");
+      dec.textContent = "−"; dec.setAttribute("aria-label","One fewer "+label.toLowerCase());
+      const val = document.createElement("input");
+      val.value = r[key]|0; val.inputMode = "numeric";
+      val.setAttribute("aria-label", label);
+      const inc = document.createElement("button");
+      inc.textContent = "+"; inc.setAttribute("aria-label","One more "+label.toLowerCase());
+      const set = n=>{
+        r[key] = Math.max(0, n|0);
+        val.value = r[key];
+        const h = row.querySelector(".sqst");
+        if(h) h.textContent = `G${r.g|0} A${r.a|0} S${r.sv|0}`;
+        libSave(); syncHash();
+      };
+      dec.onclick = ()=> set((r[key]|0) - 1);
+      inc.onclick = ()=> set((r[key]|0) + 1);
+      val.oninput = ()=>{ const n = parseInt(val.value,10); r[key] = isNaN(n)?0:Math.max(0,n);
+        const h = row.querySelector(".sqst"); if(h) h.textContent = `G${r.g|0} A${r.a|0} S${r.sv|0}`;
+        libSave(); syncHash(); };
+      wrap.appendChild(dec); wrap.appendChild(val); wrap.appendChild(inc);
+      statRow.appendChild(wrap);
+    });
+
+    const numF = body.querySelector(".sqf-num"), nameF = body.querySelector(".sqf-name");
+    numF.oninput = ()=>{ r.num = numF.value.trim();
+      const h = row.querySelector(".sqnum"); if(h) h.textContent = r.num || "–";
+      libSave(); syncHash(); };
+    nameF.oninput = ()=>{ r.name = nameF.value;
+      const h = row.querySelector(".sqnm"); if(h) h.textContent = r.name || "(no name yet)";
+      libSave(); syncHash(); };
+    body.querySelector(".sqf-del").onclick = ()=>{
+      S.squad = S.squad.filter(x=>x.id !== r.id);
+      sqOpen = null; libSave(); renderSquad(); syncHash();
+      toast((r.name || "Player") + " removed from the squad");
+    };
+
+    row.appendChild(body);
+    list.appendChild(row);
+  });
+}
+
+function openSquad(){
+  const box = $("#squadBody");
+  // both action groups sit above the list: with a full squad on file the
+  // list is long, and the thing a coach came here to press must not be
+  // at the bottom of it
+  box.innerHTML = `
+    <div id="sqTop">
+      <h2>Squad database <span class="tag" id="sqCount">0</span>
+        <button class="btn ghost sm" id="sqX" aria-label="Close" title="Close">&times;</button></h2>
+      <p class="hint">Your actual players, kept on this device. Numbers, positions and a running tally you can top up after a game.</p>
+      <div class="row" style="margin-top:12px">
+        <button class="btn primary" id="sqAdd">+ Add a player</button>
+        <button class="btn" id="sqPull">Add everyone on this board</button>
+      </div>
+      <div id="sqTools">
+        <span id="sqMatch">Match on
+          <select class="inp" id="sqMatchBy" style="width:auto;padding:6px 28px 6px 9px" aria-label="Match players on">
+            <option value="num">shirt number</option>
+            <option value="name">name</option>
+          </select>
+        </span>
+        <button class="btn primary" id="sqFill">Fill this line-up</button>
+        <button class="btn" id="sqCsv">Export</button>
+        <button class="btn" id="sqImport">Import a roster</button>
+      </div>
+      <p class="hint" id="sqFillNote"></p>
+    </div>
+    <p id="sqEmpty">Nothing on file yet. <b>Add everyone on this board</b> is the quick way in if you have already built an XI — it copies the names and numbers across, and you fill in positions and stats from there.</p>
+    <div id="sqList"></div>
+    <div class="modal-foot"><button class="btn primary" id="sqClose">Done</button></div>`;
+  $("#sqX").onclick = closeSquad;
+
+  const note = $("#sqFillNote");
+  const setNote = ()=>{ note.textContent = sqMatchBy === "num"
+    ? "Looks up each shirt number on the board and writes in that player's name."
+    : "Looks up each name on the board and writes in that player's shirt number."; };
+  $("#sqMatchBy").value = sqMatchBy;
+  $("#sqMatchBy").onchange = e=>{ sqMatchBy = e.target.value; setNote(); };
+  setNote();
+
+  $("#sqAdd").onclick = ()=>{
+    const r = squadNew();
+    S.squad.push(r); sqOpen = r.id; libSave(); renderSquad(); syncHash();
+    const f = $(`.sqrow[data-pid="${r.id}"] .sqf-name`);
+    if(f && !S.phone){ f.focus(); }
+    else if(f) f.scrollIntoView({block:"center"});
+  };
+  $("#sqPull").onclick = pullIntoSquad;
+  $("#sqFill").onclick = fillFromSquad;
+  $("#sqCsv").onclick = downloadSquadCsv;
+  $("#sqImport").onclick = ()=>{ const n = $("#csvIn"); if(n) n.click(); };
+  $("#sqClose").onclick = closeSquad;
+
+  renderSquad();
+  $("#squadModal").classList.add("open");
+}
+function closeSquad(){ $("#squadModal").classList.remove("open"); }
+
+/* ---------- storage, sharing, wiring ---------- */
+const _libSaveSquad = libSave;
+libSave = function(){
+  try{
+    localStorage.setItem(LIB_KEY, JSON.stringify({
+      v:3, custom:S.drills.custom, lineups:S.savedXI, squad:S.squad
+    }));
+    return true;
+  }catch(err){ return false; }
+};
+S.squad = (function(){
+  try{
+    const raw = localStorage.getItem(LIB_KEY);
+    const o = raw ? JSON.parse(raw) : null;
+    return (o && Array.isArray(o.squad)) ? o.squad : [];
+  }catch(err){ return []; }
+})();
+
+const _stateObjSquad = stateObj;
+stateObj = function(){ const o = _stateObjSquad(); o.squad = S.squad; return o; };
+
+const _applyStateSquad = applyState;
+applyState = function(d){
+  const incoming = (d && Array.isArray(d.squad)) ? d.squad : null;
+  _applyStateSquad(d);
+  if(incoming){
+    const have = new Set(S.squad.map(x=>x && x.id));
+    let n = 0;
+    incoming.forEach(x=>{ if(x && x.id && !have.has(x.id)){ S.squad.push(x); have.add(x.id); n++; } });
+    if(n){ squadSort(); libSave(); toast(n + " squad player" + (n===1?"":"s") + " added"); }
+  }
+  renderSquad();
+};
+
+const btnSq = $("#btnSquad");
+if(btnSq) btnSq.onclick = ()=>{ if(typeof closeDrawer === "function") closeDrawer(); openSquad(); };
+const sqModal = $("#squadModal");
+if(sqModal) sqModal.addEventListener("click", e=>{ if(e.target.id === "squadModal") closeSquad(); });
+
+/* ============================================================
+   CSV IMPORT — load a roster from a spreadsheet in one go.
+
+   Typing twenty players in by hand is the slowest thing a coach
+   could be asked to do here, so anything spreadsheet-shaped will do:
+   header names are matched loosely rather than demanded exactly,
+   positions written out in words are understood, and re-importing an
+   updated sheet tops players up instead of duplicating them.
+   ============================================================ */
+const CSV_FIELDS = [
+  ["num",  ["number","no","no.","#","jersey","jersey number","shirt","shirt number","uniform"]],
+  ["name", ["name","player","player name","athlete","full name","last, first"]],
+  ["pos",  ["pos","position","positions","pos.","primary position"]],
+  ["g",    ["g","goals","gls","goal"]],
+  ["a",    ["a","assists","ast","asst","assist","assts"]],
+  ["sv",   ["sv","saves","sv.","save","gk saves","goalie saves"]]
+];
+
+/* a small correct CSV reader: quoted fields, doubled quotes, CRLF */
+function parseCsv(text){
+  const rows = []; let row = [], cell = "", q = false;
+  const src = String(text||"").replace(/^﻿/, "");
+  for(let i = 0; i < src.length; i++){
+    const ch = src[i];
+    if(q){
+      if(ch === '"'){ if(src[i+1] === '"'){ cell += '"'; i++; } else q = false; }
+      else cell += ch;
+    } else if(ch === '"'){ q = true; }
+    else if(ch === ","){ row.push(cell); cell = ""; }
+    else if(ch === "\n"){ row.push(cell); rows.push(row); row = []; cell = ""; }
+    else if(ch === "\r"){ /* handled by the \n */ }
+    else cell += ch;
+  }
+  if(cell.length || row.length){ row.push(cell); rows.push(row); }
+  return rows.filter(r => r.some(c => String(c).trim() !== ""));
+}
+
+function csvColumns(header){
+  const clean = h => String(h||"").trim().toLowerCase().replace(/\s+/g," ");
+  const map = {};
+  header.forEach((h,i)=>{
+    const c = clean(h);
+    CSV_FIELDS.forEach(([key, names])=>{
+      if(map[key] === undefined && names.indexOf(c) >= 0) map[key] = i;
+    });
+  });
+  return map;
+}
+
+/* "Last, First" is how a lot of school exports write names */
+function tidyName(v){
+  const s = String(v||"").trim().replace(/\s+/g," ");
+  const m = /^([^,]+),\s*(.+)$/.exec(s);
+  return m ? (m[2] + " " + m[1]) : s;
+}
+/* school sheets write "Right Back", not "FB" — longest phrase wins so that
+   "right back" is not swallowed by the word "back" on its own */
+const POS_WORDS = [
+  ["GK", ["goalkeeper","goal keeper","keeper","gk","g/k","goalie"]],
+  ["FB", ["right back","left back","full back","fullback","wing back","wingback",
+          "outside back","rb","lb","rwb","lwb","wb","fb"]],
+  ["CB", ["centre back","center back","central defender","centre half","center half",
+          "sweeper","defender","defence","defense","cb","rcb","lcb","def"]],
+  ["CM", ["central midfield","centre midfield","center midfield","defensive midfield",
+          "attacking midfield","holding midfield","central mid","centre mid","center mid",
+          "midfielder","midfield","cdm","cam","cm","dm","am","mid"]],
+  ["WM", ["wide midfield","wide mid","right midfield","left midfield","right wing",
+          "left wing","winger","wing","rm","lm","rw","lw","wm","wf"]],
+  ["ST", ["centre forward","center forward","striker","forward","attacker","target man",
+          "st","cf","fw","fwd","att"]]
+];
+function tidyPos(v){
+  let t = " " + String(v||"").toLowerCase().replace(/[^a-z]+/g," ").replace(/\s+/g," ").trim() + " ";
+  const out = [];
+  POS_WORDS.forEach(([code, words])=>{
+    words.slice().sort((a,b)=>b.length-a.length).forEach(w=>{
+      if(t.indexOf(" " + w + " ") >= 0){
+        if(out.indexOf(code) < 0) out.push(code);
+        t = t.split(" " + w + " ").join("  ");   // consume it so it cannot match twice
+      }
+    });
+  });
+  return out.sort((a,b)=>POSITIONS.indexOf(a)-POSITIONS.indexOf(b));
+}
+const tidyInt = v => { const n = parseInt(String(v||"").replace(/[^\d-]/g,""),10); return isNaN(n)?0:Math.max(0,n); };
+
+function importSquadCsv(text){
+  const rows = parseCsv(text);
+  if(rows.length < 2){ toast("That file had no player rows in it"); return; }
+  const col = csvColumns(rows[0]);
+  if(col.name === undefined && col.num === undefined){
+    toast("Could not find a Name or Number column in that file");
+    return;
+  }
+  const byNum  = new Map(S.squad.map(r=>[sqNum(r.num), r]).filter(x=>x[0]));
+  const byName = new Map(S.squad.map(r=>[sqKey(r.name), r]).filter(x=>x[0]));
+  let added = 0, updated = 0, skipped = 0;
+
+  rows.slice(1).forEach(cells=>{
+    const at = k => col[k] === undefined ? "" : cells[col[k]];
+    const num  = sqNum(at("num"));
+    const name = tidyName(at("name"));
+    if(!name && !num){ skipped++; return; }
+
+    let rec = (num && byNum.get(num)) || (name && byName.get(sqKey(name)));
+    const isNew = !rec;
+    if(isNew){ rec = squadNew({num, name}); S.squad.push(rec); }
+
+    if(!isNew){
+      if(name) rec.name = name;
+      if(num)  rec.num  = num;
+    }
+    if(col.pos !== undefined){ const p = tidyPos(at("pos")); if(p.length) rec.pos = p; }
+    ["g","a","sv"].forEach(k=>{ if(col[k] !== undefined) rec[k] = tidyInt(at(k)); });
+
+    if(num)  byNum.set(num, rec);
+    if(name) byName.set(sqKey(name), rec);
+    isNew ? added++ : updated++;
+  });
+
+  squadSort(); libSave(); renderSquad(); syncHash();
+  const bits = [];
+  if(added)   bits.push(`added ${added}`);
+  if(updated) bits.push(`updated ${updated}`);
+  if(skipped) bits.push(`skipped ${skipped} blank row${skipped===1?"":"s"}`);
+  toast(bits.length ? "Squad " + bits.join(", ") : "Nothing in that file to import");
+}
+
+const csvIn = $("#csvIn");
+if(csvIn) csvIn.onchange = e=>{
+  const f = e.target.files[0]; e.target.value = "";
+  if(!f) return;
+  const r = new FileReader();
+  r.onload = ()=> importSquadCsv(r.result);
+  r.onerror = ()=> toast("That file could not be read");
+  r.readAsText(f);
 };
 
 /* ============================================================
@@ -4878,7 +6011,8 @@ $("#backdrop").onclick=closeDrawer;
 $("#sheetBg").addEventListener("click", e=>{ if(e.target.id==="sheetBg") closeSheet(); });
 $("#shareModal").addEventListener("click", e=>{ if(e.target.id==="shareModal") closeShare(); });
 document.addEventListener("keydown", e=>{
-  if(e.key==="Escape"){ closeSheet(); closeShare(); closeDrawer(); closeRoster(); }
+  if(e.key==="Escape"){ closeSheet(); closeShare(); closeDrawer(); closeRoster();
+    if(typeof closeSquad==="function") closeSquad(); }
   if(e.code==="Space" && !/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName) && canAnimate()){
     e.preventDefault(); togglePlay();
   }
@@ -5043,8 +6177,8 @@ function playerSheet(s, idx){
   f.firstChild.onclick=closeSheet;
   s.appendChild(f);
   const num=$("#psNum"), nm=$("#psName");
-  num.oninput=()=>{ p.num=num.value; L.numsEdited=true; renderPlayers(); renderRoster(); };
-  nm.oninput =()=>{ p.name=nm.value; renderPlayers(); renderRoster(); updateStatus(); };
+  num.oninput=()=>{ p.num=num.value; L.numsEdited=true; if(typeof linkPush==="function") linkPush(); renderPlayers(); renderRoster(); syncHash(); };
+  nm.oninput =()=>{ p.name=nm.value; if(typeof linkPush==="function") linkPush(); renderPlayers(); renderRoster(); updateStatus(); syncHash(); };
 }
 
 /* ---------- first-run hint ---------- */
