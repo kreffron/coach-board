@@ -7,7 +7,7 @@
    makes the app work on a field with no signal. Icons and the manifest are
    served cache-first because they almost never change.                        */
 
-const CACHE = "coach-board-2026-08-18-multi-board";
+const CACHE = "coach-board-2026-08-20-my-drills";
 const DOC   = "./index.html";
 const SHELL = ["./", DOC, "./manifest.webmanifest", "./icon-192.png", "./icon-512.png"];
 const NET_TIMEOUT = 3500;   // ms before we give up on a flaky signal and use the cache

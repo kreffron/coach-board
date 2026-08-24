@@ -2407,7 +2407,7 @@ const C = {
 };
 const PALETTE = [null,"#ffffff","#f5a524","#38bdf8","#ef4444","#37c86b","#c77dff","#111827"];
 
-const BUILD = "2026-08-20 · set pieces";
+const BUILD = "2026-08-20 · my drills";
 
 let uid = 1;
 const nid = () => "s" + (uid++);
@@ -3346,7 +3346,7 @@ function renderDrillList(){
     b.className="dcard"+(S.drills.drillId===d.id?" active":"");
     const meta=[d.dur,d.players].filter(Boolean).join(" · ");
     b.innerHTML=`<div class="dn">${esc(d.name)}</div>
-      <div class="dm">${d.custom?'<span class="tag custom">yours</span>':""}${d.all11?'<span class="tag all11">all 10 touch</span>':""}<span>${esc(meta)}</span></div>`;
+      <div class="dm">${d.custom?`<span class="tag custom">${d.over?"edited":"yours"}</span>`:""}${d.all11?'<span class="tag all11">all 10 touch</span>':""}<span>${esc(meta)}</span></div>`;
     b.onclick=()=>{
       loadDrill(d); showDrillDetail(d); renderDrillList(); updateStatus();
       if(!S.phone) setSeg("detail");        // on a phone the drawer closes, so stay in the list
@@ -3360,20 +3360,19 @@ function showDrillDetail(d){
     `<h4>${title}</h4><${ol?"ol":"ul"}>${arr.map(x=>`<li>${esc(x)}</li>`).join("")}</${ol?"ol":"ul"}>`;
   box.innerHTML=`<h3>${esc(d.name)}</h3>
     <div class="meta"><span class="tag">${esc(d.cat)}</span>${d.all11?'<span class="tag all11">all 10 outfield touch it</span>':""}<span>${esc([d.dur,d.players,d.area].filter(Boolean).join(" · "))}</span></div>
+    <div class="row" style="margin:10px 0 2px">
+      <button class="btn sm" id="edDrill">Edit this drill</button>
+      ${d.custom?`<button class="btn danger sm" id="delDrill">${d.over?"Revert to the original":"Delete this drill"}</button>`:""}
+    </div>
     ${d.setup?`<h4>Set-up</h4><p>${esc(d.setup)}</p>`:""}
     ${sec("Sequence",d.seq,true)}
     ${sec("Runs &amp; keys",d.runs)}
     ${sec("Off the ball — nobody stands still",d.off)}
     ${sec("Coaching points",d.points)}
     ${sec("Progressions",d.progs,true)}
-    ${d.key?`<h4>Key constraint</h4><p>${esc(d.key)}</p>`:""}
-    ${d.custom?`<div class="row" style="margin-top:12px"><button class="btn danger sm" id="delDrill">Delete this drill</button></div>`:""}`;
-  const del=$("#delDrill");
-  if(del) del.onclick=()=>{
-    S.drills.custom=S.drills.custom.filter(x=>x.id!==d.id);
-    S.drills.drillId=null; box.innerHTML='<p class="hint">Drill deleted.</p>';
-    buildCatSelect(); renderDrillList();
-  };
+    ${d.key?`<h4>Key constraint</h4><p>${esc(d.key)}</p>`:""}`;
+  const edb=$("#edDrill"); if(edb) edb.onclick=()=>editDrill(d);
+  const del=$("#delDrill"); if(del) del.onclick=()=>forgetDrill(d);
 }
 function newDrill(){
   const D=S.drills;
@@ -3647,6 +3646,10 @@ function openHelp(){
     <p>The 4-2-3-1 automations are your six-pattern offensive pack, carried over as written. The 3-5-2, 4-3-3 and 4-4-2 packs were built to the same template from the standard attacking principles of each shape. Everything below them — rondos, passing, footwork, duels and expanded play — is the drill library from the JV training plan. Edit or add to any of it.</p>
     <p style="color:#93a3b0;font-size:12px">${esc(TEAM_PRESET.note)}</p>
     <p style="color:#93a3b0;font-size:12px">Tip: the pitch is landscape by default. The tall-rectangle button in the toolbar flips it to vertical, attacking upward — the way your team documents draw it, and easier to read on a phone.</p>
+    <h4>Your own drills</h4>
+    <p>Hit <b>New</b> in the Drills tab, draw it on the board, fill in the details under <b>Build</b>, then <b>Save</b>. It goes into your library and stays on this device — no link to keep and no file to remember.</p>
+    <p>Every drill has an <b>Edit this drill</b> button, including the ones the app came with. Change the drawing, the sequence, the coaching points, whatever you like, and Save. Your version then replaces the original everywhere in the app, and it is marked <b>edited</b> in the list. <b>Revert to the original</b> throws your changes away and gives the built-in one back.</p>
+    <p class="hint">Saved drills live in this browser on this device. They are not shared with other coaches and they do not follow you to another phone or laptop. Clearing your browsing data will remove them, so if a set of drills matters to you, hit <b>Save</b> to keep a file as well. Opening a share link adds any drills it carries to your library without touching the ones you already have.</p>
     <h4>Working offline</h4>
     <p>Once the app has been opened on a phone it keeps a copy on the device, so it starts on a field with no signal. When you do have signal it checks the site first, so you are always on the newest version.</p>
     <p><button class="btn sm" id="btnHardRefresh">Force refresh from the site</button>
@@ -3831,8 +3834,12 @@ function refreshSheet(){
       ${d.key?`<h4>Key constraint</h4><p>${esc(d.key)}</p>`:""}`;
     s.appendChild(w);
     const f=document.createElement("div"); f.className="modal-foot";
-    f.innerHTML='<button class="btn primary" style="width:100%;padding:12px">Close</button>';
-    f.firstChild.onclick=closeSheet; s.appendChild(f);
+    f.innerHTML='<button class="btn" id="shEdit" style="flex:1;padding:12px">Edit</button>'+
+                '<button class="btn primary" id="shClose" style="flex:1;padding:12px">Close</button>';
+    f.style.display="flex"; f.style.gap="8px";
+    $("#shEdit",f).onclick=()=>editDrill(d);
+    $("#shClose",f).onclick=closeSheet;
+    s.appendChild(f);
     return;
   }
 
@@ -4300,6 +4307,201 @@ function cmpExportSvg(){
   }
   return out;
 }
+
+/* ============================================================
+   MY DRILLS — create your own, edit any of them, and keep them
+   on this device.
+
+   Two things live here:
+     1. A library saved in the browser's own storage, so drills a
+        coach makes are still there next time the site is opened —
+        no link to keep, no file to remember.
+     2. An edit path. A saved drill with `over` set to a built-in
+        drill's id REPLACES that built-in everywhere in the app, and
+        "Revert to the original" simply throws the override away.
+
+   Storage can fail (private windows, storage switched off, quota).
+   Every call is wrapped, and saveDrill() tells the coach plainly if
+   the drill could not be kept so he can use Save to write a file.
+   ============================================================ */
+const LIB_KEY = "coach-board.library.v1";
+
+function libSave(){
+  try{
+    localStorage.setItem(LIB_KEY, JSON.stringify({v:1, custom:S.drills.custom}));
+    return true;
+  }catch(err){ return false; }
+}
+function libLoad(){
+  try{
+    const raw = localStorage.getItem(LIB_KEY);
+    if(!raw) return [];
+    const o = JSON.parse(raw);
+    return Array.isArray(o && o.custom) ? o.custom : [];
+  }catch(err){ return []; }
+}
+/* drills arriving on a share link are ADDED, never allowed to
+   overwrite something already in this coach's library */
+function libMerge(list){
+  const have = new Set(S.drills.custom.map(x => x && x.id));
+  let n = 0;
+  (list||[]).forEach(x=>{
+    if(x && x.id && !have.has(x.id)){ S.drills.custom.push(x); have.add(x.id); n++; }
+  });
+  return n;
+}
+
+S.drills.custom = libLoad();
+
+/* ---------- the library, with overrides folded in ---------- */
+function allDrills(){
+  const over = new Map();
+  S.drills.custom.forEach(d=>{ if(d && d.over) over.set(d.over, d); });
+  return DRILLS.map(d => over.get(d.id) || d)
+               .concat(S.drills.custom.filter(d => d && !d.over));
+}
+
+/* ---------- the Build form ---------- */
+const ED_LINES = [
+  ["edSeq",   "seq",     "Sequence (one step per line)"],
+  ["edRuns",  "runs",    "Runs &amp; keys (one per line)"],
+  ["edOff",   "off",     "Off the ball (one per line)"],
+  ["edPts",   "points",  "Coaching points (one per line)"],
+  ["edProgs", "progs",   "Progressions (one per line)"]
+];
+function drillForm(src){
+  const v  = k => esc(src && src[k] != null ? src[k] : "");
+  const ln = k => esc((((src && src[k]) || [])).join("\n"));
+  $("#drillEdit").innerHTML = `
+    <div class="field"><label>Drill name</label><input class="inp" id="edName" value="${v("name")}" placeholder="e.g. Wide overload 3v2"></div>
+    <div class="row">
+      <div class="field"><label>Category</label><input class="inp" id="edCat" value="${src && src.cat ? esc(src.cat) : "My Drills"}"></div>
+      <div class="field"><label>Duration</label><input class="inp" id="edDur" value="${v("dur")}" placeholder="12 min"></div>
+    </div>
+    <div class="row">
+      <div class="field"><label>Players</label><input class="inp" id="edPl" value="${v("players")}" placeholder="8-12"></div>
+      <div class="field"><label>Area</label><input class="inp" id="edArea" value="${v("area")}" placeholder="30 x 25"></div>
+    </div>
+    <div class="field"><label>Set-up</label><textarea class="inp" id="edSetup" placeholder="How to lay it out…">${v("setup")}</textarea></div>
+    ${ED_LINES.map(([id,key,label]) =>
+      `<div class="field"><label>${label}</label><textarea class="inp" id="${id}">${ln(key)}</textarea></div>`).join("")}
+    <div class="field"><label>Key constraint</label><input class="inp" id="edKey" value="${v("key")}"></div>`;
+}
+
+function newDrill(){
+  const D = S.drills;
+  setSeg("build");
+  pushHist();
+  D.shapes = []; D.drillId = null; D.noAnim = false; D.editing = null;
+  D.view = "blank"; $("#pitchViewD").value = "blank";
+  render(); if(typeof updateDrillBar === "function") updateDrillBar();
+  renderDrillList();
+  $("#drillDetail").innerHTML = '<p class="hint">Draw your drill on the board, fill in the details in Build, then hit Save.</p>';
+  drillForm(null);
+  setTool("mate");
+}
+
+/* Open any drill — yours or one of the built-in ones — in the editor.
+   The drawing comes onto the board so it can be dragged around, and
+   every written section comes into the form so nothing is lost. */
+function editDrill(d){
+  if(!d) return;
+  if(typeof closeSheet === "function") closeSheet();
+  loadDrill(d);
+  setSeg("build");
+  S.drills.editing = d.id;
+  S.drills.drillId = d.id;
+  drillForm(d);
+  renderDrillList();
+  toast(d.custom ? "Editing your drill — Save keeps the changes"
+                 : "Editing — Save keeps your version, and you can revert any time");
+}
+
+function saveDrill(){
+  const nameEl = $("#edName");
+  if(!nameEl){ newDrill(); return; }
+  const name = nameEl.value.trim();
+  if(!name){ nameEl.focus(); nameEl.style.borderColor = "#e2574c"; return; }
+  const val = id => { const n = $(id); return n ? n.value.trim() : ""; };
+  const ln  = id => { const n = $(id); return n ? n.value.split("\n").map(s=>s.trim()).filter(Boolean) : []; };
+
+  const ed   = S.drills.editing;
+  const mine = ed ? S.drills.custom.find(x => x.id === ed) : null;
+  const base = (ed && !mine) ? DRILLS.find(x => x.id === ed) : null;
+
+  const d = {
+    id: mine ? mine.id : "c" + Date.now(),
+    custom: true,
+    name,
+    cat: val("#edCat") || "My Drills",
+    dur: val("#edDur"), players: val("#edPl"), area: val("#edArea"),
+    view: S.drills.view,
+    setup: val("#edSetup"), key: val("#edKey"),
+    seq: ln("#edSeq"), runs: ln("#edRuns"), off: ln("#edOff"),
+    points: ln("#edPts"), progs: ln("#edProgs"),
+    shapes: JSON.parse(JSON.stringify(S.drills.shapes))
+  };
+  const over = mine ? mine.over : (base ? base.id : null);
+  if(over) d.over = over;
+  const src = mine || base;
+  if(src){ if(src.static) d.static = true; if(src.all11) d.all11 = true; }
+
+  if(mine) S.drills.custom[S.drills.custom.indexOf(mine)] = d;
+  else     S.drills.custom.push(d);
+
+  S.drills.drillId = d.id;
+  S.drills.editing = null;
+  const kept = libSave();
+
+  $("#drillEdit").innerHTML = "";
+  buildCatSelect(); $("#drillCat").value = d.cat;
+  renderDrillList(); showDrillDetail(d);
+  if(typeof updateDrillBar === "function") updateDrillBar();
+  if(!S.phone) setSeg("detail");
+  syncHash();
+  toast(kept ? "Saved — it will be here next time you open the app"
+             : "Saved for now, but this browser will not let the app store it. Use Save to keep a file.");
+}
+
+/* Delete one of yours, or throw away an edit and get the original back. */
+function forgetDrill(d){
+  if(!d) return;
+  S.drills.custom = S.drills.custom.filter(x => x.id !== d.id);
+  S.drills.editing = null;
+  libSave();
+  buildCatSelect(); renderDrillList();
+  const back = d.over ? DRILLS.find(x => x.id === d.over) : null;
+  if(back){
+    S.drills.drillId = back.id;
+    loadDrill(back); showDrillDetail(back);
+    toast("Back to the original");
+  }else{
+    S.drills.drillId = null;
+    $("#drillDetail").innerHTML = '<p class="hint">Drill deleted.</p>';
+    toast("Drill deleted");
+  }
+  syncHash();
+}
+
+/* A share link may carry the other coach's drills. Add the ones we do
+   not already have rather than replacing this device's library. */
+const _applyStateLib = applyState;
+applyState = function(d){
+  let incoming = null;
+  if(d && d.drills && Array.isArray(d.drills.custom)){
+    incoming = d.drills.custom;
+    d = Object.assign({}, d, {drills: Object.assign({}, d.drills, {custom: S.drills.custom})});
+  }
+  _applyStateLib(d);
+  if(incoming){
+    const n = libMerge(incoming);
+    if(n){
+      libSave();
+      buildCatSelect(); renderDrillList();
+      toast(n === 1 ? "1 drill added to your library" : n + " drills added to your library");
+    }
+  }
+};
 
 /* ============================================================
    ANIMATION — play a drill back as movement
