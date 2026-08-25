@@ -266,6 +266,39 @@ body.tab-squad #mBtnPng,body.tab-squad #mBtnPrint{display:none}
 .dcard.active{border-color:var(--accent);background:#1c2b22}
 .dcard .dn{font-weight:700;font-size:13px;margin-bottom:3px}
 .dcard .dm{font-size:11px;color:var(--muted);display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+/* ---------- the running order, beside the board ---------- */
+#seqRail{position:absolute;right:0;top:0;bottom:0;width:228px;z-index:12;overflow:auto;
+  background:var(--panel);border-left:1px solid var(--line);padding:10px 10px 16px;
+  display:flex;flex-direction:column;gap:5px}
+#seqRail.hide{display:none}
+body.seq-on #boardWrap{padding-right:240px}
+#seqRail.docked{position:static;width:auto;border:0;background:transparent;padding:0;
+  margin-bottom:14px;max-height:none;overflow:visible}
+#seqRail.docked.hide{display:none}
+.seq-h{display:flex;align-items:center;justify-content:space-between;gap:6px;
+  font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);
+  font-weight:800;margin-bottom:3px}
+.seq-h .btn.sm{padding:2px 7px;min-height:0}
+.seqrow{display:flex;align-items:center;gap:4px;background:var(--panel2);
+  border:1px solid var(--line);border-radius:8px;padding:3px 4px}
+.seqrow.on{border-color:var(--accent);background:#1c2b22}
+/* a spine down the side of everything sharing a beat */
+.seqrow.tied{margin-top:-5px;border-top-left-radius:3px;border-top-right-radius:3px;border-top-color:transparent}
+.seqrow.head{border-bottom-left-radius:3px;border-bottom-right-radius:3px}
+.seqrow.head,.seqrow.tied{border-left:3px solid var(--accent2)}
+.seqbtns button[disabled]{opacity:.3}
+.seqb{flex:0 0 16px;text-align:center;font-size:11px;font-weight:800;color:var(--muted)}
+.seqmain{flex:1;min-width:0;display:flex;align-items:center;gap:6px;background:none;
+  border:0;padding:5px 2px;text-align:left;color:var(--txt)}
+.seqbadge{flex:0 0 20px;height:20px;border-radius:50%;display:grid;place-items:center;
+  font-size:10.5px;font-weight:800;color:#0b1014;background:#f5a524}
+.seqbadge.run{background:#38bdf8}
+.seqtxt{font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.seqtxt i{font-style:normal;color:var(--muted);font-weight:600}
+.seqbtns{flex:0 0 auto;display:flex;gap:2px}
+.seqbtns button{width:26px;height:28px;background:#101820;border:1px solid var(--line);
+  border-radius:5px;color:var(--muted);font-size:11px;line-height:1;padding:0}
+.seqbtns button:hover{color:var(--txt);border-color:#3a4855;background:#1b242c}
 /* pitch-view picker in the drill builder */
 .vpick{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
 .vpick button{background:var(--panel2);border:1px solid var(--line);border-radius:8px;
@@ -380,6 +413,10 @@ textarea.inp{resize:vertical;min-height:64px;font-size:12.5px}
   .dcard .dn{font-size:14px}
   .vpick{gap:7px}
   .vpick button{padding:7px 5px;font-size:11.5px}
+  .seqrow{padding:4px 5px}
+  .seqmain{padding:8px 2px}
+  .seqbtns button{width:34px;height:36px;font-size:13px}
+  .seqtxt{font-size:13px}
 
   #boardWrap{padding:6px}
   #btnZoomReset{right:10px;top:10px;padding:9px 14px}
@@ -431,7 +468,7 @@ textarea.inp{resize:vertical;min-height:64px;font-size:12.5px}
 
 @media print{
   html,body{background:#fff !important;overflow:visible !important;height:auto !important;color:#000}
-  header,#sidebar,#toolbar,#statusbar,.modal-bg,#textInput,#labelBar,#dock,#backdrop,#btnZoomReset,#sheetBg,#playBar,#drillBar{display:none !important}
+  header,#sidebar,#toolbar,#statusbar,.modal-bg,#textInput,#labelBar,#dock,#backdrop,#btnZoomReset,#sheetBg,#playBar,#drillBar,#seqRail{display:none !important}
   #app,.body,main{display:block !important;height:auto !important;background:#fff !important;overflow:visible !important}
   #boardWrap{padding:0 !important;display:block !important;height:auto !important;background:#fff !important;overflow:visible !important}
   #boardBox{width:100% !important;height:auto !important;box-shadow:none;border-radius:0;background:#fff !important}
@@ -632,6 +669,7 @@ textarea.inp{resize:vertical;min-height:64px;font-size:12.5px}
             <button id="lbClear" title="Clear this label" aria-label="Clear this label">&times;</button>
           </div>
         </div>
+        <aside id="seqRail" class="hide" aria-label="Running order"></aside>
         <button id="btnZoomReset">⤢ Reset zoom</button>
         <div id="firstRun"></div>
         <div id="playBar"></div>
@@ -2569,7 +2607,7 @@ const C = {
 };
 const PALETTE = [null,"#ffffff","#f5a524","#38bdf8","#e2574c","#37c86b","#c77dff","#111827"];
 
-const BUILD = "2026-08-25 · groups";
+const BUILD = "2026-08-25 · running order";
 
 let uid = 1;
 const nid = () => "s" + (uid++);
@@ -2956,10 +2994,20 @@ function updateZoomBtn(){
   const el2=document.getElementById("btnZoomReset");
   if(el2) el2.classList.toggle("on", S.zoom.s>1.02);
 }
+/* what is actually free inside the board area — the padding is not always 12,
+   the sequence rail on the right takes a bite out of it */
+function boardRoom(){
+  const cs=getComputedStyle(boardWrap);
+  return {
+    w: boardWrap.clientWidth  - parseFloat(cs.paddingLeft||0) - parseFloat(cs.paddingRight||0),
+    h: boardWrap.clientHeight - parseFloat(cs.paddingTop||0)  - parseFloat(cs.paddingBottom||0)
+  };
+}
 function fitBoard(){
   const b=baseVB();
   const ar= b[2]/b[3];
-  const aw=boardWrap.clientWidth-24, ah=boardWrap.clientHeight-24;
+  const room=boardRoom();
+  const aw=room.w, ah=room.h;
   if(aw<=0||ah<=0) return;
   let w=aw, h=w/ar;
   if(h>ah){ h=ah; w=h*ar; }
@@ -3909,6 +3957,7 @@ function openHelp(){
       <li>Three panels: <b>Library</b> to find a drill, <b>Drill</b> for its set-up, coaching points and progressions, <b>Build</b> to make your own.</li>
       <li>The library is sectioned. <b>Automations</b> are grouped by formation — 4-2-3-1, 3-5-2, 4-3-3 and 4-4-2 — and each pattern uses that shape's own shirt numbers, so it maps straight onto the Lineup tab. Everything below them is the session library: warm-ups, rondos, passing, footwork, duels and expanded play.</li>
       <li><b>New drill</b> clears the board so you can draw your own. Choose the pitch it sits on at the top of Build — blank grass, a full pitch, a half or the final third — then <b>Save to library</b> keeps it.</li>
+      <li>The <b>running order</b> beside the board lists every pass and run in the drill, and lets you move them into the order you actually want.</li>
       <li>Save the file to keep your own drills permanently — <b>Open</b> brings them back.</li>
     </ul>
     <h4>Playing a drill back</h4>
@@ -3977,17 +4026,27 @@ function openHelp(){
     <p>Click any player, pass or run with the <b>arrow</b> tool and a small box appears at the top left of the board. Type into it: a shirt number on a player, a number on a pass, a letter on a run. Click the same thing <b>twice</b> to jump straight into that box. Drop a new player on the board and the box is already waiting.</p>
     <p>The <b>1&middot;2&middot;3</b> button on the toolbar does the whole board at once — every pass gets 1, 2, 3 and every run gets A, B, C, in the order you drew them. On a phone it is under the <b>&hellip;</b> button, called <b>Number the passes and runs</b>.</p>
     <p class="hint">The badge on a pass or a run is not just decoration: <b>Play</b> follows those numbers. Renumber a pass and the animation reorders itself to match, which is also how you fix a drill that plays back in the wrong order.</p>
+    <h4>The running order</h4>
+    <p>While you are in <b>Build</b> there is a list beside the board — every pass, run, dribble and shot in the drill, in the order it happens. It is the plainest way to say <i>this, then this</i>.</p>
+    <ul>
+      <li>The drill is a list of <b>beats</b>. Everything in a beat happens at the same moment; the next beat waits for it to finish.</li>
+      <li><b>▲ ▼</b> move a row earlier or later. <b>⇡</b> ties a row to the beat above so they go together; <b>⇵</b> gives it a beat of its own again.</li>
+      <li>Tap a row to light that arrow up on the board.</li>
+      <li>Because a beat can hold runs with no ball in it, <b>runners can go in before the ball is played</b> — the ball simply waits on the flag. That is the corner where the blockers set off first and the second wave arrives with the delivery.</li>
+      <li>In a beat that <i>does</i> have a ball in it, everyone in that beat arrives <b>with the ball</b>, however far they have to run.</li>
+    </ul>
+    <p class="hint">A drill you have not reordered is timed off the ball exactly as it always was — the list is only showing you what it already does. The first time you move a row, the drill starts following the list instead, and the badges on the board are renumbered to match so the pitch and the list never disagree.</p>
     <h4>Making things happen at the same time</h4>
-    <p>Runs are timed off <b>the ball</b>, not off each other, so several runners keyed to the same pass already break together. To say so outright, <b>pick them and group them</b>.</p>
+    <p>You can also tie things together straight on the board, without the list.</p>
     <ul>
       <li><b>Shift-click</b> a second, third, fourth object on a laptop. On a phone, tap one, hit <b>＋</b> in the bar, then tap the others.</li>
       <li>With two or more picked the bar reads <b>3 picked</b>. Hit <b>Group</b>.</li>
-      <li><b>Runs</b> grouped together break as one and arrive as one. They end up sharing a letter — that is all a group is, so you can see it on the board.</li>
-      <li><b>Passes</b> grouped together are struck at the same moment, each with its own ball. Two balls in the air at once is exactly right for a warm-up in two lines.</li>
+      <li><b>Runs</b> tied together break as one and arrive as one.</li>
+      <li><b>Passes</b> tied together are struck at the same moment, each with its own ball. Two balls in the air at once is exactly right for a warm-up in two lines.</li>
       <li>Pick <b>a pass and some runs</b> together and the runners go as that ball is struck and arrive as it lands — the way a corner routine actually works.</li>
-      <li><b>Ungroup</b> puts them back on their own. Select just one of a group and the same button takes only that one out.</li>
+      <li><b>Ungroup</b> puts them back on their own. Select just one of them and the same button takes only that one out.</li>
     </ul>
-    <p class="hint">Because a group is only a shared badge, everything else still works on it: <b>1&middot;2&middot;3</b> renumbers the board without breaking your groups, and grouped work is saved, shared and reopened like anything else. Picking several also lets you recolour or delete the lot in one go.</p>
+    <p class="hint">Grouping is the same thing as putting rows in one beat — do it either way and the list agrees. Picking several also lets you recolour or delete the lot in one go.</p>
     <h4>Your own drills</h4>
     <p>Hit <b>New</b> in the Drills tab, draw it on the board, fill in the details under <b>Build</b>, then <b>Save</b>. It goes into your library and stays on this device — no link to keep and no file to remember.</p>
     <p><b>Pick the pitch first.</b> At the top of Build there are six little pictures — blank grass, the full pitch, either half, two-thirds and the final third. Tap one and the board redraws on the spot, so a corner routine can be drawn on the final third and a small-sided game on open grass. The drill remembers it and opens on that pitch every time, on any device the drill travels to.</p>
@@ -4477,7 +4536,9 @@ function hideCompare(){
 }
 function cmpCellSize(n){
   const v = VB[S.boards[0].view] || VB.full;
-  const availW = boardWrap.clientWidth - 24, availH = boardWrap.clientHeight - 24;
+  const room = (typeof boardRoom==="function") ? boardRoom()
+             : {w:boardWrap.clientWidth-24, h:boardWrap.clientHeight-24};
+  const availW = room.w, availH = room.h;
   const gap = 10, head = 34;
   let w = Math.floor((availW - gap*(n-1)) / n);
   let h = Math.round(w * (v[2]/v[3]));
@@ -5101,6 +5162,13 @@ function freeLetter(skip){
 function groupSel(){
   const picked = selShapes().filter(canGroup);
   if(picked.length < 2){ toast("Pick two or more passes or runs first"); return; }
+  /* the running order is the real home of this — put them in one beat */
+  if(typeof beatTogether === "function"){
+    beatTogether(picked);
+    S.addSel = false;
+    toast(picked.length + " tied together — they happen at the same moment");
+    return;
+  }
   pushHist();
   const balls = picked.filter(isBallShape), runs = picked.filter(isRunShape);
   let num = null, ltr = null;
@@ -5135,6 +5203,15 @@ function groupSel(){
 function ungroupSel(){
   const picked = selShapes().filter(canGroup);
   if(!picked.length){ toast("Pick a pass or a run first"); return; }
+  if(typeof beatApart === "function" && picked.some(s => s.o && s.o.b)){
+    /* one picked shape leaves its beat; several are spread over beats of their own */
+    const spread = picked.length > 1 ? picked
+                 : [seqAll().find(x => beatOf(x) === beatOf(picked[0]) && x !== picked[0]), picked[0]]
+                     .filter(Boolean);
+    beatApart(spread);
+    toast(picked.length === 1 ? "On its own beat now" : "Untied — each one goes on its own");
+    return;
+  }
   pushHist();
   picked.forEach(s=>{
     s.o = s.o || {};
@@ -6122,6 +6199,88 @@ const segLen = s => {
 };
 const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
 
+/* Everything in a beat happens at once; the next beat waits for it. A beat of
+   runs on its own simply takes as long as its longest runner needs. Passes in
+   the same beat each get their own ball. */
+function planByBeats(balls, runs, tokens, beatOf){
+  const GAP=0.14;
+  const bag=new Map();
+  balls.concat(runs).forEach(s=>{
+    const b=beatOf(s) || 9999;                 // anything not placed yet goes last
+    if(!bag.has(b)) bag.set(b, []);
+    bag.get(b).push(s);
+  });
+  const keys=[...bag.keys()].sort((a,b)=>a-b);
+  const endBeat=s=>{ const e=(s.o && +s.o.be)||0; return e>0 ? e : 0; };
+
+  // how long each beat needs on its own — a run reaching into a later beat
+  // does not stretch this one, it is simply still going when the next starts
+  const len=new Map();
+  keys.forEach(k=>{
+    const inBeat=bag.get(k);
+    const hasBall=inBeat.some(isBallAct);
+    let L=0.4;
+    inBeat.forEach(s=>{
+      if(isBallAct(s)) L=Math.max(L, clamp(segLen(s)/230, 0.45, 1.7));
+      // in a beat with a ball in it everybody arrives WITH the ball, however far
+      // they have to run; a beat of runners on its own takes as long as it takes
+      else if(!hasBall && !(endBeat(s)>k)) L=Math.max(L, clamp(segLen(s)/210, 0.6, 2.3));
+    });
+    len.set(k, L);
+  });
+  const t0=new Map(), t1=new Map();
+  let cursor=0;
+  keys.forEach(k=>{ t0.set(k,cursor); t1.set(k,cursor+len.get(k)); cursor=t1.get(k)+GAP; });
+
+  const steps=[], moves=[];
+  keys.forEach(k=>{
+    const inBeat=bag.get(k);
+    inBeat.filter(isBallAct).forEach((s,i)=>{
+      const d=clamp(segLen(s)/230, 0.45, 1.7);
+      steps.push({s, start:t0.get(k), end:t0.get(k)+d, end_pt:s.p[s.p.length-1], lane:i});
+    });
+    // the runners in a beat arrive as it closes — with the ball, if there is one
+    inBeat.filter(isRunAct).forEach(r=>{
+      const e=endBeat(r);
+      const finish=(e>k && t1.has(e)) ? t1.get(e) : t1.get(k);
+      moves.push({shape:r, start:t0.get(k), dur:Math.max(0.4, finish-t0.get(k)), ease:true});
+    });
+  });
+  const ballEnd=Math.max(0, cursor-GAP);
+  const laneCount=steps.reduce((a,st)=>Math.max(a, st.lane+1), 1);
+  const byLane=[];
+  for(let L=0;L<laneCount;L++) byLane.push(steps.filter(st=>st.lane===L));
+
+  steps.forEach(st=>{
+    if(st.s.t==="carry"||st.s.t==="dribble")
+      moves.push({shape:st.s, start:st.start, dur:st.end-st.start, ease:false});
+  });
+  attachTokens(moves, tokens);
+  const dur=Math.max(ballEnd, ...moves.map(m=>m.start+m.dur), 0.8)+0.55;
+  const b0=steps.length ? {x:steps[0].s.p[0].x, y:steps[0].s.p[0].y} : null;
+  return {steps, moves, tokens, dur, b0, byLane, lanes:laneCount, beats:true,
+          shift: steps.length>=3 && !!b0};
+}
+
+/* Attach a player to each move, in time order, following where that player has
+   already been sent. Without this a second run by the same player finds nobody,
+   because his token is still recorded at his starting position. */
+function attachTokens(moves, tokens){
+  const at=new Map(tokens.map(tk=>[tk.id, {x:tk.p[0].x, y:tk.p[0].y}]));
+  moves.sort((a,b)=>a.start-b.start || a.dur-b.dur);
+  moves.forEach(m=>{
+    const from=m.shape.p[0];
+    let best=null, bd=98;
+    tokens.forEach(tk=>{
+      const q=at.get(tk.id);
+      const d=Math.hypot(q.x-from.x, q.y-from.y);
+      if(d<bd){ bd=d; best=tk; }
+    });
+    m.token=best;
+    if(best){ const e=m.shape.p[m.shape.p.length-1]; at.set(best.id, {x:e.x, y:e.y}); }
+  });
+}
+
 function buildPlan(){
   const shapes=board().shapes||[];
   const idx=new Map(shapes.map((s,i)=>[s.id,i]));
@@ -6136,6 +6295,16 @@ function buildPlan(){
   const runs =shapes.filter(isRunAct).sort(order);
   const tokens=shapes.filter(s=>TOKEN_T.has(s.t));
   if(!balls.length && !runs.length) return null;
+
+  /* ---------- a drill with a running order of its own ----------
+     The Sequence list gives every arrow a beat. Beat 1 happens, then beat 2,
+     and so on, so a set of runners can go BEFORE the ball is played and the
+     ball waits on the flag for them. A drill with no beats on it — every
+     built-in one — skips all of this and is timed off the ball as before. */
+  const beatOfShape = s => (s.o && +s.o.b) || 0;
+  if(balls.concat(runs).some(s=>beatOfShape(s)>0)){
+    return planByBeats(balls, runs, tokens, beatOfShape);
+  }
 
   /* Passes carrying the SAME number happen at the same moment — that is what
      the Group button does. They all leave together, each takes its own flight
@@ -6227,22 +6396,7 @@ function buildPlan(){
       moves.push({shape:st.s, start:st.start, dur:st.end-st.start, ease:false});
   });
 
-  // Attach a player to each move, in time order, following where that player has
-  // already been sent. Without this a second run by the same player finds nobody,
-  // because his token is still recorded at his starting position.
-  const at=new Map(tokens.map(tk=>[tk.id, {x:tk.p[0].x, y:tk.p[0].y}]));
-  moves.sort((a,b)=>a.start-b.start || a.dur-b.dur);
-  moves.forEach(m=>{
-    const from=m.shape.p[0];
-    let best=null, bd=98;
-    tokens.forEach(tk=>{
-      const q=at.get(tk.id);
-      const d=Math.hypot(q.x-from.x, q.y-from.y);
-      if(d<bd){ bd=d; best=tk; }
-    });
-    m.token=best;
-    if(best){ const e=m.shape.p[m.shape.p.length-1]; at.set(best.id, {x:e.x, y:e.y}); }
-  });
+  attachTokens(moves, tokens);
 
   const dur=Math.max(ballEnd, ...moves.map(m=>m.start+m.dur), 0.8)+0.55;
   const b0=steps.length ? {x:steps[0].s.p[0].x, y:steps[0].s.p[0].y} : null;
@@ -6545,6 +6699,337 @@ if("serviceWorker" in navigator && /^https?:$/.test(location.protocol)){
 
 document.addEventListener("gesturestart", e=>e.preventDefault());
 document.addEventListener("dblclick", e=>{ if(e.target.closest("#boardBox")) e.preventDefault(); }, {passive:false});
+
+/* ============================================================
+   SEQUENCE — the running order of a drill you are building.
+
+   A drill is a list of BEATS. Everything in a beat happens at the
+   same moment; the next beat waits for it. That is what lets a set
+   of runners go BEFORE the corner is taken and a second set arrive
+   with it — something pinning runs to passes could never say.
+
+   The list shows every pass, run, dribble and shot in playing order,
+   on a rail beside the board in Build (folded into the Build panel on
+   a phone, where a rail would leave no pitch to draw on).
+
+   Nothing is written to the drill until the coach actually moves
+   something. Until then the list is only a picture of how the drill
+   already plays, so every built-in drill keeps its own timing.
+   ============================================================ */
+const SEQ_TOKENS = new Set(["mate","opp","neut"]);
+
+function seqAll(){
+  return (board().shapes || []).filter(s => isRunShape(s) || isBallShape(s));
+}
+function beatOf(s){ return (s && s.o && +s.o.b) || 0; }
+function endBeatOf(s){ return (s && s.o && +s.o.be) || 0; }
+function isSequenced(){ return seqAll().some(s => beatOf(s) > 0); }
+function beatList(){
+  return [...new Set(seqAll().map(beatOf).filter(b => b > 0))].sort((a,b)=>a-b);
+}
+
+/* ---------- what the list shows ----------
+   Either the beats the coach has set, or — before he has touched
+   anything — the beats the animation is already running to. */
+function seqView(){
+  const list = seqAll();
+  if(!list.length) return [];
+  const idx = new Map((board().shapes || []).map((s,i)=>[s.id,i]));
+
+  if(isSequenced()){
+    let mx = Math.max(0, ...list.map(beatOf));
+    const rows = list.map(s => ({s, b: beatOf(s) || ++mx, i: idx.get(s.id)}));
+    rows.sort((a,b)=> a.b - b.b || a.i - b.i);
+    let n = 0, prev = null;
+    rows.forEach(r=>{ if(r.b !== prev){ prev = r.b; n++; } r.n = n; });
+    return rows;
+  }
+
+  const P = buildPlan();
+  const t0 = new Map(), t1 = new Map();
+  if(P){
+    P.steps.forEach(st=>{ t0.set(st.s.id, st.start); t1.set(st.s.id, st.end); });
+    P.moves.forEach(m=>{
+      if(t0.has(m.shape.id)) return;
+      t0.set(m.shape.id, m.start); t1.set(m.shape.id, m.start + m.dur);
+    });
+  }
+  const rows = list.map(s => ({s, i: idx.get(s.id),
+    t: t0.has(s.id) ? t0.get(s.id) : 9e9,
+    e: t1.has(s.id) ? t1.get(s.id) : 9e9}));
+  rows.sort((a,b)=> a.t - b.t || a.i - b.i);
+  let n = 0, prev = null;
+  rows.forEach(r=>{
+    if(prev === null || r.t - prev > 0.05) n++;
+    prev = r.t;
+    r.n = n; r.b = n;
+  });
+  /* a run that is still going when later beats start keeps that reach */
+  const closes = [];
+  rows.forEach(r=>{ closes[r.n] = Math.max(closes[r.n] || 0, r.e === 9e9 ? 0 : r.e); });
+  rows.forEach(r=>{
+    if(!isRunShape(r.s) || r.e === 9e9) return;
+    let far = r.n;
+    for(let k = r.n + 1; k < closes.length; k++){
+      if(closes[k] !== undefined && r.e >= closes[k] - 0.06) far = k;
+    }
+    if(far > r.n) r.be = far;
+  });
+  return rows;
+}
+
+/* Write the picture down, exactly as it is being shown, so nothing jumps
+   the first time the coach moves a row. */
+function ensureBeats(){
+  const rows = seqView();
+  if(!rows.length) return false;
+  if(isSequenced()){
+    let mx = Math.max(...seqAll().map(beatOf));
+    seqAll().forEach(s=>{ if(!beatOf(s)){ s.o = s.o || {}; s.o.b = ++mx; } });
+    normalizeBeats();
+    return true;
+  }
+  rows.forEach(r=>{
+    r.s.o = r.s.o || {};
+    r.s.o.b = r.n;
+    if(r.be && r.be > r.n) r.s.o.be = r.be; else delete r.s.o.be;
+  });
+  return true;
+}
+
+function normalizeBeats(){
+  const list = seqAll();
+  const map = new Map();
+  let n = 0;
+  seqView().forEach(r=>{ if(!map.has(r.b)) map.set(r.b, ++n); });
+  list.forEach(s=>{
+    if(!beatOf(s)) return;
+    const nb = map.get(beatOf(s));
+    if(nb) s.o.b = nb;
+    if(endBeatOf(s)){
+      const ne = map.get(endBeatOf(s));
+      if(ne && ne > s.o.b) s.o.be = ne; else delete s.o.be;
+    }
+  });
+}
+
+/* the badge on the board is the running order, so keep the two saying
+   the same thing */
+function renumberFromBeats(){
+  let n = 0, r = 0;
+  beatList().forEach(b=>{
+    const inB  = seqAll().filter(s => beatOf(s) === b);
+    const ball = inB.filter(isBallShape), run = inB.filter(isRunShape);
+    if(ball.length){ n++; ball.forEach(s=>{ s.o.n = String(n); }); }
+    if(run.length){ const L = String.fromCharCode(65 + (r++ % 26)); run.forEach(s=>{ s.o.n = L; }); }
+  });
+}
+
+function seqFind(id){ return seqAll().find(s => s.id === id) || null; }
+function seqAfter(){ normalizeBeats(); renumberFromBeats(); render(); syncHash(); }
+/* the first move takes control of the timing — say so once */
+function seqTakeOver(){
+  const fresh = !isSequenced();
+  ensureBeats();
+  return fresh;
+}
+
+/* ---------- what the buttons do ---------- */
+function seqMove(id, dir){
+  const s = seqFind(id); if(!s) return;
+  const beats0 = seqView();
+  const at = beats0.findIndex(r => r.s === s);
+  const mine = beats0[at] && beats0[at].n;
+  const others = beats0.filter(r => r.n === mine).length > 1;
+  const all = [...new Set(beats0.map(r => r.n))].sort((a,b)=>a-b);
+  const pos = all.indexOf(mine);
+  if(!others && all[pos + dir] === undefined){
+    toast(dir < 0 ? "Already first" : "Already last"); return;
+  }
+  pushHist();
+  const fresh = seqTakeOver();
+  const b = beatOf(s);
+  if(others){
+    s.o.b = b + (dir < 0 ? -0.5 : 0.5);        // step out of the tie, next door
+    delete s.o.be;
+  }else{
+    const beats = beatList();
+    const nb = beats[beats.indexOf(b) + dir];
+    if(nb === undefined){ seqAfter(); return; }
+    seqAll().forEach(x=>{
+      if(beatOf(x) === b) x.o.b = nb;
+      else if(beatOf(x) === nb) x.o.b = b;
+    });
+  }
+  seqAfter();
+  if(fresh) toast("This drill now runs to the list");
+}
+function seqJoin(id){
+  const s = seqFind(id); if(!s) return;
+  const view = seqView();
+  const mine = (view.find(r => r.s === s) || {}).n;
+  const all = [...new Set(view.map(r => r.n))].sort((a,b)=>a-b);
+  if(all.indexOf(mine) <= 0){ toast("Nothing above it to join"); return; }
+  pushHist();
+  const fresh = seqTakeOver();
+  const beats = beatList();
+  const at = beats.indexOf(beatOf(s));
+  if(at > 0){ s.o.b = beats[at-1]; delete s.o.be; }
+  seqAfter();
+  toast(fresh ? "Tied to the beat above — this drill now runs to the list"
+              : "Tied to the beat above — they happen together");
+}
+function seqSplit(id){
+  const s = seqFind(id); if(!s) return;
+  const view = seqView();
+  const mine = (view.find(r => r.s === s) || {}).n;
+  if(view.filter(r => r.n === mine).length < 2){ toast("It is already on its own"); return; }
+  pushHist();
+  const fresh = seqTakeOver();
+  s.o.b = beatOf(s) + 0.5;
+  delete s.o.be;
+  seqAfter();
+  toast(fresh ? "On its own beat — this drill now runs to the list" : "On its own beat now");
+}
+/* used by the Group / Ungroup buttons over the board */
+function beatTogether(shapes){
+  if(!shapes || shapes.length < 2) return false;
+  pushHist();
+  seqTakeOver();
+  const b = Math.min(...shapes.map(beatOf).filter(Boolean));
+  shapes.forEach(s=>{ s.o = s.o || {}; s.o.b = b; delete s.o.be; });
+  seqAfter();
+  return true;
+}
+function beatApart(shapes){
+  if(!shapes || !shapes.length) return false;
+  pushHist();
+  seqTakeOver();
+  let bump = 0.1;
+  shapes.forEach((s,i)=>{
+    if(i === 0) return;
+    s.o = s.o || {}; s.o.b = beatOf(s) + bump; delete s.o.be; bump += 0.1;
+  });
+  seqAfter();
+  return true;
+}
+
+/* ---------- what a row says ---------- */
+function seqWhat(s){
+  if(isRunShape(s)) return "Run";
+  if(s.t === "shot") return "Shot";
+  if(s.t === "carry" || s.t === "dribble") return "Dribble";
+  if(s.t === "curve") return "Curled pass";
+  return "Pass";
+}
+function seqWho(s){
+  const from = s.p[0];
+  let best = null, bd = 90;
+  (board().shapes || []).forEach(x=>{
+    if(!SEQ_TOKENS.has(x.t)) return;
+    const d = Math.hypot(x.p[0].x - from.x, x.p[0].y - from.y);
+    if(d < bd){ bd = d; best = x; }
+  });
+  return (best && best.o && best.o.t) ? "#" + best.o.t : "";
+}
+
+/* ---------- the list ---------- */
+let seqSig = "";
+function seqHost(){ return $("#seqRail"); }
+
+function renderSeqList(force){
+  const host = seqHost(); if(!host) return;
+  const rows = seqView();
+  const sig = [S.tab, S.seg, S.phone, S.sel, (S.selx||[]).join(","),
+    rows.map(r => r.s.id + ":" + r.n + ":" + (r.be||0) + ":" + ((r.s.o && r.s.o.n)||"")).join("|")].join("~");
+  if(!force && sig === seqSig) return;
+  seqSig = sig;
+
+  if(!rows.length){
+    host.innerHTML = `<div class="seq-h"><span>Running order</span></div>
+      <p class="hint">Draw a pass or a run and it turns up here. Anything tied together happens at the same moment.</p>`;
+    return;
+  }
+  let html = `<div class="seq-h"><span>Running order</span></div>`;
+  const sizes = {};
+  rows.forEach(r=>{ sizes[r.n] = (sizes[r.n] || 0) + 1; });
+  const lastBeat = rows[rows.length-1].n;
+  let prev = null;
+  rows.forEach((r,i)=>{
+    const s = r.s;
+    const first = r.n !== prev;
+    prev = r.n;
+    const shared = sizes[r.n] > 1;
+    const who = seqWho(s);
+    const badge = (s.o && s.o.n) ? s.o.n : "";
+    const cls = [isSel(s.id) ? "on" : "", first ? "" : "tied", shared ? (first ? "head" : "") : ""]
+                  .filter(Boolean).join(" ");
+    const off = (b) => b ? " disabled" : "";
+    html += `<div class="seqrow ${cls}" data-id="${s.id}">
+      <span class="seqb">${first ? r.n : "&#8942;"}</span>
+      <button class="seqmain" data-act="pick" title="Show it on the board">
+        <span class="seqbadge ${isRunShape(s) ? "run" : "ball"}">${esc(badge)}</span>
+        <span class="seqtxt">${seqWhat(s)}${who ? ' <i>' + esc(who) + '</i>' : ""}${
+          r.be ? ' <i>&rarr; ' + r.be + '</i>' : ""}</span>
+      </button>
+      <span class="seqbtns">
+        <button data-act="up" title="Earlier" aria-label="Move earlier"${off(i===0)}>&#9650;</button>
+        <button data-act="down" title="Later" aria-label="Move later"${off(r.n===lastBeat && !shared)}>&#9660;</button>
+        <button data-act="${first ? "join" : "split"}"
+          title="${first ? "Make it happen with the one above" : "Give it a beat of its own"}"
+          aria-label="${first ? "Tie to the beat above" : "Split off"}"${off(first && r.n===1)}>${
+          first ? "&#8607;" : "&#8613;"}</button>
+      </span>
+    </div>`;
+  });
+  html += `<p class="hint">Beat 1 finishes before beat 2 starts, so runners can go in before the ball is played. Rows tied together happen at the same moment.</p>`;
+  host.innerHTML = html;
+}
+
+(function(){
+  const host = seqHost(); if(!host) return;
+  host.addEventListener("click", e=>{
+    const btn = e.target.closest("[data-act]"); if(!btn) return;
+    const row = e.target.closest(".seqrow"); if(!row) return;
+    const id = row.dataset.id, act = btn.dataset.act;
+    if(act === "pick"){ S.sel = id; S.selx = []; render(); return; }
+    if(act === "up")    seqMove(id, -1);
+    if(act === "down")  seqMove(id, +1);
+    if(act === "join")  seqJoin(id);
+    if(act === "split") seqSplit(id);
+  });
+})();
+
+/* ---------- where it lives ---------- */
+function placeSeqRail(){
+  const rail = seqHost(); if(!rail) return;
+  const panel = $("#segBuild"), wrap = $("#boardWrap");
+  if(S.phone && panel && rail.parentNode !== panel){
+    panel.appendChild(rail); rail.classList.add("docked");
+  }else if(!S.phone && wrap && rail.parentNode !== wrap){
+    wrap.appendChild(rail); rail.classList.remove("docked");
+  }
+  const show = S.tab === "drills" && S.seg === "build";
+  document.body.classList.toggle("seq-on", show && !S.phone);
+  rail.classList.toggle("hide", !show);
+  if(show) renderSeqList(true);
+}
+
+const _setSegSeq = setSeg;
+setSeg = function(k){ _setSegSeq(k); placeSeqRail(); fitBoard(); };
+
+const _switchTabSeq = switchTab;
+switchTab = function(t){ _switchTabSeq(t); placeSeqRail(); };
+
+const _applyPhoneSeq = applyPhoneMode;
+applyPhoneMode = function(){ _applyPhoneSeq(); placeSeqRail(); };
+
+/* the list follows the board, and only redraws when something it shows changed */
+const _renderSeq = render;
+render = function(){
+  _renderSeq();
+  if(S.tab === "drills" && S.seg === "build") renderSeqList(false);
+};
 
 /* ============================================================
    ROSTER ENTRY, PLAYER QUICK-EDIT, FIRST-RUN HINT

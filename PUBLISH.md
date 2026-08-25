@@ -17,7 +17,9 @@ GitHub just serves the files as a website.
 
 - **Lineup** — formations, up to three boards side by side, saved line-ups
 - **Drills** — 67 sessions with animated playback, plus your own, drawn on whichever
-  pitch suits them: blank grass, a full pitch, either half, two-thirds or the final third
+  pitch suits them: blank grass, a full pitch, either half, two-thirds or the final third.
+  A running order beside the board sets what happens when — runners can go in before
+  the ball is played, and anything sharing a beat happens at the same moment
 - **Squad** — your players: numbers, positions, goals/assists/saves, and two-way transfer to a line-up
 
 Your drills, line-ups and squad are saved in the browser on the device you are using.
