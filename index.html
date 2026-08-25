@@ -124,6 +124,20 @@ select.inp{appearance:none;background-image:linear-gradient(45deg,transparent 50
 
 /* ---------- main / board ---------- */
 main{flex:1;display:flex;flex-direction:column;min-width:0;min-height:0;background:#0b0f12}
+/* the squad is a database, not a pitch — it gets the whole width */
+#squadPage{display:none;flex:1;min-height:0;overflow:auto;padding:18px 20px 28px;
+  padding-left:calc(20px + var(--sal));padding-right:calc(20px + var(--sar))}
+body.tab-squad #squadPage{display:block}
+body.tab-squad #sidebar{display:none !important}
+body.tab-squad #boardWrap,body.tab-squad #toolbar,body.tab-squad #dock,
+body.tab-squad #playBar,body.tab-squad #drillBar,body.tab-squad #btnZoomReset,
+body.tab-squad #colorPop,body.tab-squad #firstRun{display:none !important}
+body.tab-squad #mobBtn{visibility:hidden}
+body.tab-squad #statusbar{display:none}
+/* PNG and Print draw a pitch; the squad page has its own Export instead */
+body.tab-squad #btnPng,body.tab-squad #btnPrint,
+body.tab-squad #mBtnPng,body.tab-squad #mBtnPrint{display:none}
+.sqpage-in{max-width:920px;margin:0 auto}
 #toolbar{display:flex;align-items:center;gap:10px;padding:7px 10px;background:var(--panel);
   border-bottom:1px solid var(--line);flex-wrap:wrap;flex:0 0 auto}
 .tgroup{display:flex;gap:3px;background:var(--chip);padding:3px;border-radius:8px}
@@ -261,11 +275,11 @@ textarea.inp{resize:vertical;min-height:64px;font-size:12.5px}
 #sqList{display:flex;flex-direction:column;gap:6px;margin-top:8px}
 .sqrow{background:var(--panel2);border:1px solid var(--line);border-radius:9px;overflow:hidden}
 .sqrow.open{border-color:var(--accent)}
-.sqhead{display:flex;align-items:center;gap:8px;padding:7px 9px;cursor:pointer;min-height:44px}
+.sqhead{display:flex;align-items:center;gap:10px;padding:8px 11px;cursor:pointer;min-height:48px}
 .sqhead .sqnum{flex:0 0 34px;text-align:center;font-weight:800;font-size:13px;color:var(--accent)}
-.sqhead .sqnm{flex:1;min-width:0;font-weight:600;font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sqhead .sqnm{flex:1;min-width:0;font-weight:600;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .sqhead .sqpos{flex:0 0 auto;display:flex;gap:3px}
-.sqhead .sqst{flex:0 0 auto;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.sqhead .sqst{flex:0 0 auto;font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums;min-width:88px;text-align:right}
 .pchip{font-size:9.5px;font-weight:800;letter-spacing:.03em;background:var(--chip);color:#c3d0da;
   border:1px solid var(--line);border-radius:5px;padding:2px 4px}
 .sqbody{display:none;padding:2px 9px 11px;border-top:1px solid var(--line)}
@@ -284,12 +298,22 @@ textarea.inp{resize:vertical;min-height:64px;font-size:12.5px}
 .stat input{width:46px;text-align:center;background:transparent;border:0;color:#e7edf2;
   font-size:15px;font-weight:800;font-variant-numeric:tabular-nums;padding:0}
 #sqEmpty{font-size:13px;color:var(--muted);line-height:1.55;margin:10px 0}
-#sqTools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}
-#sqTop{position:sticky;top:-22px;z-index:2;background:var(--panel);
-  padding-top:2px;margin:-2px 0 4px;border-bottom:1px solid var(--line)}
-#sqTop h2{display:flex;align-items:center;gap:8px}
-#sqX{margin-left:auto;font-size:20px;line-height:1;padding:2px 10px;min-height:34px}
-#sqTop .hint{margin-bottom:8px}
+#sqTools{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-top:10px;
+  background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 11px}
+/* on a phone this block was eating the top of the list before a single
+   player showed — the button and the selector say enough on their own */
+@media (max-width:560px){
+  #sqFillNote{display:none}
+  #sqTools{padding:8px 9px;gap:8px}
+  #sqTop .hint{font-size:12.5px}
+  #squadPage{padding:14px 12px 24px}
+}
+#sqTop{position:sticky;top:-18px;z-index:2;background:#0b0f12;
+  padding:2px 0 10px;margin-bottom:6px;border-bottom:1px solid var(--line)}
+#sqTop h2{display:flex;align-items:center;gap:9px;margin:0 0 4px;font-size:20px}
+#sqTop .hint{margin:0 0 10px;font-size:13px;color:var(--muted);line-height:1.5}
+.sqacts{display:flex;gap:8px;flex-wrap:wrap}
+.sqacts .btn{min-height:38px}
 #sqMatch{display:flex;gap:6px;align-items:center;font-size:12px;color:var(--muted)}
 .linkbox{width:100%;background:#101820;border:1px solid var(--line);border-radius:8px;padding:10px;
   font-size:12px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;word-break:break-all;max-height:90px;overflow:auto;color:#9fd8ff}
@@ -362,13 +386,11 @@ textarea.inp{resize:vertical;min-height:64px;font-size:12.5px}
   .modal{padding:18px;border-radius:14px;max-height:88vh}
   .legend{grid-template-columns:1fr}
 }
-/* the narrowest phones in use: give the header room to fit */
-@media (max-width:400px){
+/* three tabs plus the menu and share buttons do not fit alongside the
+   wordmark on a phone, so below this width the wordmark stands down */
+@media (max-width:430px){
   header{gap:8px;padding-left:calc(9px + var(--sal));padding-right:calc(9px + var(--sar))}
-  .tabs button{padding:8px 11px}
-  .brand{font-size:13px}
-}
-@media (max-width:360px){
+  .tabs button{padding:8px 10px;font-size:12.5px}
   .brand{display:none}
 }
 @media (max-height:500px){
@@ -421,6 +443,7 @@ textarea.inp{resize:vertical;min-height:64px;font-size:12.5px}
     <nav class="tabs" id="tabs">
       <button data-tab="lineup" class="active">Lineup</button>
       <button data-tab="drills">Drills</button>
+      <button data-tab="squad">Squad</button>
     </nav>
     <div class="spacer"></div>
     <div class="hdr-actions desk-only">
@@ -571,6 +594,7 @@ textarea.inp{resize:vertical;min-height:64px;font-size:12.5px}
         <div id="firstRun"></div>
         <div id="playBar"></div>
       </div>
+      <div id="squadPage"><div class="sqpage-in" id="squadBody"></div></div>
       <div id="statusbar" class="desk-only">
         <span id="stTool">Tool: <b>Select</b></span>
         <span id="stInfo"></span>
@@ -593,7 +617,7 @@ textarea.inp{resize:vertical;min-height:64px;font-size:12.5px}
 <div class="modal-bg" id="helpModal"><div class="modal" id="helpBody"></div></div>
 <div class="modal-bg" id="shareModal"><div class="modal" id="shareBody"></div></div>
 <div class="modal-bg" id="rosterModal"><div class="modal" id="rosterBody"></div></div>
-<div class="modal-bg" id="squadModal"><div class="modal wide" id="squadBody"></div></div>
+
 <input type="file" id="fileIn" accept=".json,application/json" style="display:none">
 <input type="file" id="csvIn" accept=".csv,.txt,text/csv" style="display:none">
 <script>
@@ -909,7 +933,8 @@ const DRILLS = [
   id:"wu-dyn", static:true, name:"Dynamic Stretching Ladder", cat:"Warm-Up", dur:"10 min",
   players:"Full squad", area:"Two 20-yard lanes", view:"blank",
   setup:"This is the dynamic block that follows Wolf Packs. Two lines, three cones per line — start, 10 yards, 20 yards — with the lines 10 yards apart so nobody is on top of anybody. Players work out through the cones and walk back down the OUTSIDE of their line, so the group is never standing still. Where a station lists two movements, the first runs to the middle cone and the second from there to the far cone. Where it says OUT and BACK, one movement covers the full 20 yards out and the other brings them back down the lane. First player goes on the coach's call; the next goes when the player in front reaches the middle cone.",
-  seq:["RAISE — Jog out, backpedal back. Two lengths, easy.",
+  seq:["RAISE — Forward arm circles OUT: small to the middle cone, big from there to the far one. Backward arm circles BACK, small then big the same way. Shoulders first, before anything else moves.",
+    "RAISE — Jog out, backpedal back. Two lengths, easy.",
     "RAISE — Side shuffle: right side going out, left side coming back. Stay low, no heel clicks.",
     "RAISE — Carioca right, then carioca left. Open the hips, let the trail leg cross through.",
     "MOBILISE — Knee hug the whole way OUT, quad pull (heel to backside) the whole way BACK. One rep per step, tall through the standing leg.",
@@ -929,9 +954,9 @@ const DRILLS = [
     "Quality over speed on the mobility stations. A sloppy lunge warms nothing up.",
     "Keep the lines tight and the gaps consistent — it should look like a team, and it takes half the time.",
     "Go straight from the last sprint into the ball work. Three minutes standing and you have undone it."],
-  progs:["Cold day: add a lap of the pitch before station 1 and repeat the carioca.",
+  progs:["Cold day: add a lap of the pitch before the arm circles and repeat the carioca.",
     "Match day: run the whole ladder, then straight into passing pairs — no gap.",
-    "Day after a match: stations 1 to 9 only — no skips, no plyos, no strides.",
+    "Day after a match: stations 1 to 10 only — no skips, no plyos, no strides.",
     "Once they know it, hand it to a senior player and coach from the side."],
   key:"Ten minutes, moving the whole time, finishing at 95% — then straight into the session.",
   items:[
@@ -2502,7 +2527,7 @@ const C = {
 };
 const PALETTE = [null,"#ffffff","#f5a524","#38bdf8","#e2574c","#37c86b","#c77dff","#111827"];
 
-const BUILD = "2026-08-24 · squad database";
+const BUILD = "2026-08-24 · squad tab (final)";
 
 let uid = 1;
 const nid = () => "s" + (uid++);
@@ -2526,7 +2551,11 @@ const S = {
 /* S.lineup is whichever board is being edited, so every existing call site
    keeps working when there is more than one on the screen. */
 Object.defineProperty(S, "lineup", { get(){ return S.boards[S.bi] || S.boards[0]; } });
-const board = () => S[S.tab];
+/* only the two pitch tabs have a board; the squad tab is a database page */
+const board = () => S.tab === "drills" ? S.drills : S.lineup;
+/* history follows whatever board() just handed back, so a change made from the
+   squad page lands on the line-up's undo stack rather than falling on the floor */
+const histKey = () => S.tab === "drills" ? "drills" : "lineup";
 const $  = (s,r=document) => r.querySelector(s);
 const $$ = (s,r=document) => [...r.querySelectorAll(s)];
 const svg = $("#board"), boardBox = $("#boardBox"), boardWrap = $("#boardWrap");
@@ -2913,7 +2942,7 @@ function snap(){
   return JSON.stringify(o);
 }
 function pushHist(){
-  const h=S.hist[S.tab];
+  const h=S.hist[histKey()]; if(!h) return;
   h.u.push(snap());
   if(h.u.length>60) h.u.shift();
   h.r.length=0;
@@ -2926,7 +2955,7 @@ function applySnap(str){
   if(d.bench) b.bench=d.bench;
   SNAP_KEYS.forEach(k=>{ if(d[k]!==undefined) b[k]=d[k]; });
   S.sel=null;
-  if(S.tab==="lineup"){
+  if(S.tab!=="drills"){
     if(typeof refreshLineupControls==="function") refreshLineupControls();
     if(typeof buildBoardBar==="function") buildBoardBar();
     renderRoster();
@@ -2934,12 +2963,12 @@ function applySnap(str){
   render();
 }
 function undo(){
-  const h=S.hist[S.tab];
+  const h=S.hist[histKey()]; if(!h) return;
   if(!h.u.length) return;
   h.r.push(snap()); applySnap(h.u.pop()); updateStatus();
 }
 function redo(){
-  const h=S.hist[S.tab];
+  const h=S.hist[histKey()]; if(!h) return;
   if(!h.r.length) return;
   h.u.push(snap()); applySnap(h.r.pop()); updateStatus();
 }
@@ -3326,7 +3355,9 @@ document.addEventListener("keydown", e=>{
   }
   if(e.key==="Escape"){ S.sel=null; S.swapFrom=null; setTool("select"); renderRoster(); render(); return; }
   if(e.key==="?"){ e.preventDefault(); openHelp(); return; }
-  if(KEYS[k]) setTool(KEYS[k]);
+  // the squad page has no board, so a drawing shortcut there would only
+  // change the tool behind your back
+  if(KEYS[k] && S.tab!=="squad") setTool(KEYS[k]);
 });
 
 /* ============================================================
@@ -3788,9 +3819,9 @@ function openHelp(){
     <h4>Loading a roster from a spreadsheet</h4>
     <p><b>Import a roster</b> in the Squad database reads a CSV, so a squad you already have in Excel or Sheets goes in at once instead of being typed. It finds Number, Name, Position, Goals, Assists and Saves columns under whatever names your sheet uses, understands positions written out in words (&ldquo;Right Back&rdquo; becomes FB), and copes with &ldquo;Alvarez, Mateo&rdquo; style names. It matches on shirt number first, then name, so re-importing an updated sheet tops players up instead of adding them twice.</p>
     <h4>Squad database</h4>
-    <p>The <b>Squad database</b> button under Starting XI holds your actual players: shirt number, name, the positions each can play (GK, FB, CB, CM, WM, ST) and a running tally of goals, assists and saves. Tap a row to open it. It lives on this device with your drills and saved line-ups.</p>
-    <p>The quick way in is <b>Add everyone on this board</b> — it copies the names and numbers off the XI you have already built, so you are not typing everyone twice. It never adds the same player twice, and it ignores empty bench slots.</p>
-    <p><b>Fill this line-up from the squad</b> goes the other way. Choose what to match on: <b>shirt number</b> looks up each number on the board and writes in that player's name; <b>name</b> looks up each name and writes in his number. Anyone it cannot find is left alone and counted in the message, so nothing gets invented. Undo puts it back.</p>
+    <p>The <b>Squad</b> tab holds your actual players: shirt number, name, the positions each can play (GK, FB, CB, CM, WM, ST) and a running tally of goals, assists and saves. Tap a row to open it. It lives on this device with your drills and saved line-ups.</p>
+    <p>The quick way in is <b>Add everyone from the line-up</b> — it copies the names and numbers off the XI you have already built, so you are not typing everyone twice. It never adds the same player twice, and it ignores empty bench slots.</p>
+    <p><b>Send to the line-up</b> goes the other way, and drops you back on the Lineup tab so you can see what landed. Choose what to match on: <b>shirt number</b> looks up each number on the board and writes in that player's name; <b>name</b> looks up each name and writes in his number. Anyone it cannot find is left alone and counted in the message, so nothing gets invented. Undo puts it back.</p>
     <p class="hint">Stats are yours to keep however you like — the +/− buttons are there to top up after a game. <b>Export as a spreadsheet</b> writes a CSV you can open in Excel or Sheets.</p>
     <h4>Saved line-ups</h4>
     <p>Hit <b>Save this line-up</b> at the top of the Lineup tab and whatever is on the board you are editing gets put on the shelf — formation, every name and number, where each player is standing, the bench, the kit colour and anything you have drawn on top. It is named for you; type over the name in the list to change it.</p>
@@ -3840,6 +3871,15 @@ function switchTab(t){
   $$("#tabs button").forEach(b=>b.classList.toggle("active", b.dataset.tab===t));
   $("#panelLineup").classList.toggle("panel-hide", t!=="lineup");
   $("#panelDrills").classList.toggle("panel-hide", t!=="drills");
+  // the squad tab is a page rather than a pitch, so the board furniture stands down
+  document.body.classList.toggle("tab-squad", t==="squad");
+  if(t==="squad"){
+    if(typeof closeDrawer==="function") closeDrawer();
+    if(typeof renderSquadPage==="function") renderSquadPage();
+    updateStatus();
+    if(typeof updateDrillBar==="function") updateDrillBar();
+    return;
+  }
   render(); updateStatus();
   if(typeof updateFirstRun==="function") updateFirstRun();
   if(typeof updateDrillBar==="function") updateDrillBar();
@@ -5236,8 +5276,9 @@ function fillFromSquad(){
     hit++;
   });
   if(typeof linkPush === "function") linkPush();
-  renderRoster(); render(); updateStatus(); syncHash();
   const what = by === "num" ? "name" : "number";
+  if(hit && S.tab === "squad") switchTab("lineup");   // show him what just happened
+  renderRoster(); render(); updateStatus(); syncHash();
   toast(hit
     ? `Filled ${hit} ${what}${hit===1?"":"s"}` + (miss ? ` — ${miss} not in the squad` : "")
     : `No matches by ${by === "num" ? "shirt number" : "name"}`);
@@ -5401,19 +5442,19 @@ function renderSquad(){
   });
 }
 
-function openSquad(){
-  const box = $("#squadBody");
-  // both action groups sit above the list: with a full squad on file the
-  // list is long, and the thing a coach came here to press must not be
-  // at the bottom of it
+/* The squad used to live in a modal. A database wants room, so it is a page
+   of its own now: actions pinned at the top, the roll below, full width. */
+function renderSquadPage(){
+  const box = $("#squadBody"); if(!box) return;
   box.innerHTML = `
     <div id="sqTop">
-      <h2>Squad database <span class="tag" id="sqCount">0</span>
-        <button class="btn ghost sm" id="sqX" aria-label="Close" title="Close">&times;</button></h2>
-      <p class="hint">Your actual players, kept on this device. Numbers, positions and a running tally you can top up after a game.</p>
-      <div class="row" style="margin-top:12px">
+      <h2>Squad <span class="tag" id="sqCount">0</span></h2>
+      <p class="hint">Your players, kept on this device: shirt number, the positions each can play, and a tally you can top up after a game.</p>
+      <div class="sqacts">
         <button class="btn primary" id="sqAdd">+ Add a player</button>
-        <button class="btn" id="sqPull">Add everyone on this board</button>
+        <button class="btn" id="sqPull">Add everyone from the line-up</button>
+        <button class="btn" id="sqImport">Import a roster</button>
+        <button class="btn" id="sqCsv">Export</button>
       </div>
       <div id="sqTools">
         <span id="sqMatch">Match on
@@ -5422,21 +5463,17 @@ function openSquad(){
             <option value="name">name</option>
           </select>
         </span>
-        <button class="btn primary" id="sqFill">Fill this line-up</button>
-        <button class="btn" id="sqCsv">Export</button>
-        <button class="btn" id="sqImport">Import a roster</button>
+        <button class="btn primary" id="sqFill">Send to the line-up</button>
+        <span class="hint" id="sqFillNote"></span>
       </div>
-      <p class="hint" id="sqFillNote"></p>
     </div>
-    <p id="sqEmpty">Nothing on file yet. <b>Add everyone on this board</b> is the quick way in if you have already built an XI — it copies the names and numbers across, and you fill in positions and stats from there.</p>
-    <div id="sqList"></div>
-    <div class="modal-foot"><button class="btn primary" id="sqClose">Done</button></div>`;
-  $("#sqX").onclick = closeSquad;
+    <p id="sqEmpty">Nothing on file yet. <b>Add everyone from the line-up</b> is the quick way in if you have already built an XI, or <b>Import a roster</b> if your squad is in a spreadsheet.</p>
+    <div id="sqList"></div>`;
 
   const note = $("#sqFillNote");
   const setNote = ()=>{ note.textContent = sqMatchBy === "num"
-    ? "Looks up each shirt number on the board and writes in that player's name."
-    : "Looks up each name on the board and writes in that player's shirt number."; };
+    ? "Looks up each shirt number on the line-up and writes in that player's name."
+    : "Looks up each name on the line-up and writes in that player's shirt number."; };
   $("#sqMatchBy").value = sqMatchBy;
   $("#sqMatchBy").onchange = e=>{ sqMatchBy = e.target.value; setNote(); };
   setNote();
@@ -5445,19 +5482,18 @@ function openSquad(){
     const r = squadNew();
     S.squad.push(r); sqOpen = r.id; libSave(); renderSquad(); syncHash();
     const f = $(`.sqrow[data-pid="${r.id}"] .sqf-name`);
-    if(f && !S.phone){ f.focus(); }
-    else if(f) f.scrollIntoView({block:"center"});
+    if(f){ f.scrollIntoView({block:"center"}); if(!S.phone) f.focus(); }
   };
   $("#sqPull").onclick = pullIntoSquad;
   $("#sqFill").onclick = fillFromSquad;
   $("#sqCsv").onclick = downloadSquadCsv;
   $("#sqImport").onclick = ()=>{ const n = $("#csvIn"); if(n) n.click(); };
-  $("#sqClose").onclick = closeSquad;
 
   renderSquad();
-  $("#squadModal").classList.add("open");
 }
-function closeSquad(){ $("#squadModal").classList.remove("open"); }
+/* anything that used to open the modal now just goes to the tab */
+function openSquad(){ switchTab("squad"); }
+function closeSquad(){}
 
 /* ---------- storage, sharing, wiring ---------- */
 const _libSaveSquad = libSave;
@@ -5494,9 +5530,7 @@ applyState = function(d){
 };
 
 const btnSq = $("#btnSquad");
-if(btnSq) btnSq.onclick = ()=>{ if(typeof closeDrawer === "function") closeDrawer(); openSquad(); };
-const sqModal = $("#squadModal");
-if(sqModal) sqModal.addEventListener("click", e=>{ if(e.target.id === "squadModal") closeSquad(); });
+if(btnSq) btnSq.onclick = ()=>{ if(typeof closeDrawer === "function") closeDrawer(); switchTab("squad"); };
 
 /* ============================================================
    CSV IMPORT — load a roster from a spreadsheet in one go.

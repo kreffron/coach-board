@@ -13,6 +13,16 @@ GitHub just serves the files as a website.
 | `icon-512.png` | App icon, larger |
 | `sw.js` | Keeps a copy on each phone so the app opens with no signal |
 
+**What is in the app**
+
+- **Lineup** — formations, up to three boards side by side, saved line-ups
+- **Drills** — 67 sessions with animated playback, plus your own
+- **Squad** — your players: numbers, positions, goals/assists/saves, and two-way transfer to a line-up
+
+Your drills, line-ups and squad are saved in the browser on the device you are using.
+**Save** writes one date-stamped file holding all of it; **Open** on another device adds it
+without replacing what is already there.
+
 ---
 
 ## One-time setup — about 5 minutes
