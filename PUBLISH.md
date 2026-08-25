@@ -16,7 +16,8 @@ GitHub just serves the files as a website.
 **What is in the app**
 
 - **Lineup** — formations, up to three boards side by side, saved line-ups
-- **Drills** — 67 sessions with animated playback, plus your own
+- **Drills** — 67 sessions with animated playback, plus your own, drawn on whichever
+  pitch suits them: blank grass, a full pitch, either half, two-thirds or the final third
 - **Squad** — your players: numbers, positions, goals/assists/saves, and two-way transfer to a line-up
 
 Your drills, line-ups and squad are saved in the browser on the device you are using.
