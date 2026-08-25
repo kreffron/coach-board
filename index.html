@@ -105,6 +105,19 @@ select.inp{appearance:none;background-image:linear-gradient(45deg,transparent 50
 .lurow button{flex:0 0 auto}
 .prow{display:flex;align-items:center;gap:6px;background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:4px 5px}
 .prow.sel{border-color:var(--accent);box-shadow:0 0 0 1px rgba(55,200,107,.35) inset}
+/* while a substitution is armed the other side lights up as a target */
+.prow.target{border-style:dashed;border-color:#4a5b68;cursor:pointer}
+.prow.target:hover{border-color:var(--accent);background:rgba(55,200,107,.07)}
+.prow.target .grip{opacity:.35}
+/* the name field fills most of the row, so while a sub is armed the whole
+   row has to be the target — not just the thin strip either side of it */
+.prow.target input{pointer-events:none;background:transparent;border-color:transparent}
+.prow.target .x{pointer-events:none;opacity:.25}
+#subBar{display:none;align-items:center;gap:8px;background:rgba(55,200,107,.12);
+  border:1px solid var(--accent);border-radius:8px;padding:8px 10px;margin-bottom:8px}
+#subBar.on{display:flex}
+#subBar span{flex:1;min-width:0;font-size:12px;font-weight:600;color:#d7f5e3;line-height:1.35}
+#subBar button{flex:0 0 auto;min-height:34px}
 .prow .pos{flex:0 0 34px;font-size:10px;font-weight:800;color:var(--muted);text-align:center;letter-spacing:.04em}
 .prow .num{flex:0 0 36px;width:36px;min-width:0;text-align:center;padding:6px 2px;background:#101820;border:1px solid var(--line);border-radius:5px;font-weight:700;font-size:12px}
 .prow .nm{flex:1;min-width:0;padding:6px 7px;background:#101820;border:1px solid var(--line);border-radius:5px;font-size:12.5px}
@@ -344,7 +357,8 @@ textarea.inp{resize:vertical;min-height:64px;font-size:12.5px}
   .prow{padding:5px}
   .prow .num{flex:0 0 42px;width:42px;padding:8px 2px}
   .prow .nm{padding:8px}
-  .prow .grip{flex:0 0 34px;height:36px;font-size:15px}
+  .prow .grip{flex:0 0 40px;height:42px;font-size:17px}
+  .prow.target{padding:6px 5px}
   .prow .x{flex:0 0 34px;font-size:20px;min-height:34px}
   .tg{padding:10px 11px;font-size:12.5px;min-height:38px}
   .dcard{padding:12px}
@@ -529,11 +543,12 @@ textarea.inp{resize:vertical;min-height:64px;font-size:12.5px}
         <div class="row" style="margin-bottom:9px">
           <button class="btn" id="btnSquad" style="width:100%">👥 Squad database</button>
         </div>
+        <div id="subBar"></div>
         <div class="plist" id="starters"></div>
 
         <div class="sec-title">Bench <button class="btn sm" id="btnAddBench">+ Add</button></div>
         <div class="plist" id="bench"></div>
-        <p class="hint"><b>Sub someone on:</b> tap ⇄ on a bench row, then tap the player on the pitch. <b>Move:</b> drag any token.</p>
+        <p class="hint"><b>Make a sub:</b> tap ⇄ on either the player coming on or the one coming off, then tap the row you are swapping with. Works on the pitch too. <b>Move:</b> drag any token.</p>
       </div>
 
       <div class="side-scroll panel-hide" id="panelDrills">
@@ -2527,7 +2542,7 @@ const C = {
 };
 const PALETTE = [null,"#ffffff","#f5a524","#38bdf8","#e2574c","#37c86b","#c77dff","#111827"];
 
-const BUILD = "2026-08-24 · squad tab (final)";
+const BUILD = "2026-08-25 · easier subs";
 
 let uid = 1;
 const nid = () => "s" + (uid++);
@@ -2837,7 +2852,7 @@ function renderPlayers(L0){
     if(S.editIdx===i && act)
       el("circle",{cx:p.x,cy:p.y,r:31*k,fill:"none",stroke:"#37c86b","stroke-width":3.4*k,
         "stroke-dasharray":`${9*k} ${6*k}`,"pointer-events":"none"},g);
-    playerGlyph(g,p.x,p.y, L.teamColor, S.swapFrom!==null?"#37c86b":"#ffffff",
+    playerGlyph(g,p.x,p.y, L.teamColor, (S.swapFrom&&typeof S.swapFrom==="object")?"#37c86b":"#ffffff",
       L.showNums?p.num:"", sub);
     if(L.showPos && L.showNames && p.name){
       el("text",{x:p.x,y:p.y-27*k,"text-anchor":"middle","font-size":11.5*k,"font-weight":"800",
@@ -3152,15 +3167,24 @@ function movePinch(){
   const d=Math.hypot(a.x-b.x, a.y-b.y)||1;
   const mid={x:(a.x+b.x)/2, y:(a.y+b.y)/2};
   const {r,vb0,base,d0,m0}=pinch;
-  const scale=Math.max(1/ (vb0[2]/base[2]) , Math.min(6*(base[2]/vb0[2]), d/d0));
+  // The floor used to be the RECIPROCAL of the right number, which forced
+  // scale above 1 whenever you were zoomed in — so a pinch could only ever
+  // zoom further in and never back out.
+  const minScale = vb0[2]/base[2];              // pinching in fully returns to the whole pitch
+  const maxScale = (vb0[2]*6)/base[2];          // and six times is as close as it goes
+  const scale = Math.max(minScale, Math.min(maxScale, d/d0));
   let nw=vb0[2]/scale, nh=vb0[3]/scale;
-  if(nw>base[2]){ nw=base[2]; nh=base[3]; }
+  let atRest=false;
+  if(nw>=base[2]){ nw=base[2]; nh=base[3]; atRest=true; }
   // keep the point that was under the initial midpoint under the current one
   const fx=vb0[0]+((m0.x-r.left)/r.width)*vb0[2];
   const fy=vb0[1]+((m0.y-r.top)/r.height)*vb0[3];
   const nx=fx-((mid.x-r.left)/r.width)*nw;
   const ny=fy-((mid.y-r.top)/r.height)*nh;
-  S.zoom.s=base[2]/nw; S.zoom.x=nx-base[0]; S.zoom.y=ny-base[1];
+  S.zoom.s=base[2]/nw;
+  // fully zoomed out, there is nothing to pan to — keep the pitch centred
+  S.zoom.x = atRest ? 0 : nx-base[0];
+  S.zoom.y = atRest ? 0 : ny-base[1];
   render(); updateZoomBtn();
 }
 
@@ -3183,7 +3207,7 @@ svg.addEventListener("pointerdown", e=>{
     const tk=e.target.closest("[data-pid]");
     if(tk){
       const idx=+tk.dataset.pid;
-      if(S.swapFrom!==null){ doSwap(idx); return; }
+      if(swapArmed()){ doSwap(idx); return; }
       pushHist();
       dragInfo={kind:"player", idx, sx:e.clientX, sy:e.clientY,
         off:{x:p.x-S.lineup.players[idx].x, y:p.y-S.lineup.players[idx].y}};
@@ -3206,8 +3230,10 @@ svg.addEventListener("pointerdown", e=>{
       }
       return;
     }
-    // empty space while zoomed in — drag to pan the board
-    if(S.zoom.s>1.02){
+    // Empty space while zoomed in pans the board — but with a MOUSE only.
+    // On a touch screen one finger always belongs to the board itself and the
+    // view moves with two, the way a map does.
+    if(S.zoom.s>1.02 && e.pointerType!=="touch"){
       const r=svg.getBoundingClientRect(), vb=curVB();
       pan={sx:e.clientX, sy:e.clientY, x0:S.zoom.x, y0:S.zoom.y, upp:vb[2]/r.width};
       S.sel=null; render(); return;
@@ -3296,6 +3322,14 @@ svg.addEventListener("pointerup", e=>{
   }
   tmp=null; render(); updateStatus();
 });
+/* iOS sometimes drops a pointerup. If every finger is off the glass, forget
+   them all — otherwise the board stays convinced two are still down and one
+   finger starts moving the view. */
+svg.addEventListener("touchend", e=>{
+  if(e.touches.length===0){ ptrs.clear(); pinch=null; }
+}, {passive:true});
+svg.addEventListener("touchcancel", ()=>{ ptrs.clear(); pinch=null; }, {passive:true});
+
 svg.addEventListener("pointercancel", e=>{
   ptrs.delete(e.pointerId);
   if(ptrs.size<2) pinch=null;
@@ -3353,7 +3387,7 @@ document.addEventListener("keydown", e=>{
     if(S.sel){ e.preventDefault(); pushHist(); board().shapes=board().shapes.filter(s=>s.id!==S.sel); S.sel=null; render(); }
     return;
   }
-  if(e.key==="Escape"){ S.sel=null; S.swapFrom=null; setTool("select"); renderRoster(); render(); return; }
+  if(e.key==="Escape"){ S.sel=null; if(swapArmed()) cancelSwap(); S.swapFrom=null; setTool("select"); renderRoster(); render(); return; }
   if(e.key==="?"){ e.preventDefault(); openHelp(); return; }
   // the squad page has no board, so a drawing shortcut there would only
   // change the tool behind your back
@@ -3403,18 +3437,36 @@ function roleFor(i){
   const p=S.lineup.players[i];
   return (tp && p && tp.num===p.num && tp.pos===p.pos) ? tp.role : "";
 }
+function renderSubBar(){
+  const bar=$("#subBar"); if(!bar) return;
+  if(!swapArmed()){ bar.classList.remove("on"); bar.innerHTML=""; return; }
+  const who = slotName(slotAt(S.swapFrom));
+  bar.classList.add("on");
+  bar.innerHTML = `<span>${esc(who)} ${S.swapFrom.side==="bench"?"is coming on":"is coming off"} — tap the row you want to swap with.</span>`;
+  const c=document.createElement("button");
+  c.className="btn sm"; c.textContent="Cancel";
+  c.onclick=cancelSwap;
+  bar.appendChild(c);
+}
 function renderRoster(){
   const L=S.lineup;
+  renderSubBar();
   $("#startCount").textContent=L.players.length;
   const st=$("#starters"); st.innerHTML="";
   L.players.forEach((p,i)=>{
     const row=document.createElement("div"); row.className="prow";
-    row.innerHTML=`<span class="pos">${p.pos}</span>
+    if(swapHere("start",i)) row.classList.add("sel");
+    if(swapTarget("start")) row.classList.add("target");
+    row.innerHTML=`<button class="grip" aria-label="Substitute ${esc(p.name||p.pos)}" title="Swap this player">⇄</button>
+      <span class="pos">${p.pos}</span>
       <input class="num" value="${esc(p.num)}" maxlength="2" aria-label="Shirt number">
       <input class="nm" value="${esc(p.name)}" placeholder="Player name" aria-label="Player name">`;
     const [num,nm]=row.querySelectorAll("input");
     num.oninput=()=>{ p.num=num.value; S.lineup.numsEdited=true; linkPush(); render(); syncHash(); };
     nm.oninput =()=>{ p.name=nm.value; linkPush(); render(); updateStatus(); syncHash(); };
+    row.querySelector(".grip").onclick=e=>{ e.stopPropagation(); armSwap("start",i); };
+    // while a swap is armed, the whole row is the "put him here" target
+    row.onclick=e=>{ if(swapTarget("start") && !e.target.closest("input")) doSwapWith("start",i); };
     const r=roleFor(i);
     if(r) row.title=r;
     st.appendChild(row);
@@ -3422,31 +3474,72 @@ function renderRoster(){
   const bn=$("#bench"); bn.innerHTML="";
   L.bench.forEach((p,i)=>{
     const row=document.createElement("div");
-    row.className="prow"+(S.swapFrom===i?" sel":"");
-    row.innerHTML=`<span class="grip" title="Tap the row, then tap a player on the pitch to swap">⇄</span>
+    row.className="prow";
+    if(swapHere("bench",i)) row.classList.add("sel");
+    if(swapTarget("bench")) row.classList.add("target");
+    row.innerHTML=`<button class="grip" aria-label="Bring ${esc(p.name||"this player")} on" title="Bring this player on">⇄</button>
       <input class="num" value="${esc(p.num)}" maxlength="2" aria-label="Bench shirt number">
       <input class="nm" value="${esc(p.name)}" placeholder="Bench player" aria-label="Bench player name">
       <button class="x" title="Remove">×</button>`;
     const [num,nm]=row.querySelectorAll("input");
     num.oninput=()=>{p.num=num.value; linkPush(); syncHash();};
     nm.oninput =()=>{p.name=nm.value; linkPush(); updateStatus(); syncHash();};
-    row.querySelector(".grip").onclick=()=>{
-      S.swapFrom = (S.swapFrom===i? null : i); renderRoster(); renderPlayers();
-      $("#stInfo").innerHTML = S.swapFrom!==null
-        ? "<b>Now tap a player on the pitch to swap them in.</b>" : $("#stInfo").innerHTML;
-    };
-    row.querySelector(".x").onclick=()=>{ L.bench.splice(i,1); S.swapFrom=null; renderRoster(); updateStatus(); };
+    row.querySelector(".grip").onclick=e=>{ e.stopPropagation(); armSwap("bench",i); };
+    row.onclick=e=>{ if(swapTarget("bench") && !e.target.closest("input") && !e.target.closest(".x")) doSwapWith("bench",i); };
+    row.querySelector(".x").onclick=e=>{ e.stopPropagation(); L.bench.splice(i,1); S.swapFrom=null;
+      renderRoster(); updateStatus(); syncHash(); };
     bn.appendChild(row);
   });
 }
-function doSwap(pitchIdx){
-  const L=S.lineup, b=L.bench[S.swapFrom], p=L.players[pitchIdx];
-  pushHist();
-  const tn=p.name, tnum=p.num;
-  p.name=b.name; p.num=b.num;
-  b.name=tn; b.num=tnum;
-  S.swapFrom=null; renderRoster(); renderPlayers(); updateStatus();
+/* ---------- substitutions ----------
+   A sub is one swap between two slots, and either end can start it: tap ⇄ on
+   the player coming off or on the one coming on. Once armed, the other side's
+   rows light up as targets, so the whole thing can be done in the list without
+   going near the pitch — which is what a phone needs. Tapping a player on the
+   pitch still finishes it too. */
+const swapArmed  = () => S.swapFrom && typeof S.swapFrom === "object";
+const swapHere   = (side,i) => swapArmed() && S.swapFrom.side===side && S.swapFrom.i===i;
+const swapTarget = (side) => swapArmed() && !(S.swapFrom.side===side && false);
+function slotAt(ref){
+  const L=S.lineup;
+  return ref.side==="bench" ? L.bench[ref.i] : L.players[ref.i];
 }
+const slotName = sl => !sl ? "that slot"
+  : ((sl.name||"").trim() || (String(sl.num||"").trim() ? "#"+sl.num : "the empty slot"));
+
+function armSwap(side,i){
+  if(swapHere(side,i)){ cancelSwap(); return; }
+  S.swapFrom = {side, i};
+  renderRoster(); renderPlayers();
+  const who = slotName(slotAt(S.swapFrom));
+  toast(side==="bench"
+    ? who + " is coming on — now tap whoever he replaces"
+    : who + " is coming off — now tap whoever comes on");
+}
+function cancelSwap(){
+  S.swapFrom = null; renderRoster(); renderPlayers();
+}
+function doSwapWith(side,i){
+  if(!swapArmed()) return;
+  const a = S.swapFrom, bRef = {side, i};
+  if(a.side===bRef.side && a.i===bRef.i){ cancelSwap(); return; }
+  const A = slotAt(a), B = slotAt(bRef);
+  if(!A || !B){ cancelSwap(); return; }
+  const aWas = slotName(A), bWas = slotName(B);
+  pushHist();
+  const n=A.name, num=A.num;
+  A.name=B.name; A.num=B.num;
+  B.name=n;      B.num=num;
+  S.swapFrom=null;
+  if(typeof linkPush==="function") linkPush();
+  renderRoster(); renderPlayers(); render(); updateStatus(); syncHash();
+  const onName  = a.side==="bench" ? aWas : bWas;
+  const offName = a.side==="bench" ? bWas : aWas;
+  toast(a.side===bRef.side ? aWas + " swaps with " + bWas
+                           : onName + " on for " + offName);
+}
+/* the pitch keeps working: tap a token to finish an armed swap */
+function doSwap(pitchIdx){ doSwapWith("start", pitchIdx); }
 function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
 
 /* ============================================================
@@ -3823,6 +3916,12 @@ function openHelp(){
     <p>The quick way in is <b>Add everyone from the line-up</b> — it copies the names and numbers off the XI you have already built, so you are not typing everyone twice. It never adds the same player twice, and it ignores empty bench slots.</p>
     <p><b>Send to the line-up</b> goes the other way, and drops you back on the Lineup tab so you can see what landed. Choose what to match on: <b>shirt number</b> looks up each number on the board and writes in that player's name; <b>name</b> looks up each name and writes in his number. Anyone it cannot find is left alone and counted in the message, so nothing gets invented. Undo puts it back.</p>
     <p class="hint">Stats are yours to keep however you like — the +/− buttons are there to top up after a game. <b>Export as a spreadsheet</b> writes a CSV you can open in Excel or Sheets.</p>
+    <h4>Zoom and moving around on a phone</h4>
+    <p><b>Two fingers</b> pinch to zoom and drag to move the board, the way a map does. <b>One finger</b> always belongs to the board itself — dragging a player, drawing an arrow — so the pitch never slides away underneath you. Pinch all the way in and it snaps back to the whole pitch, centred.</p>
+    <h4>Substitutions</h4>
+    <p>Tap the <b>&#8646;</b> button on either end of the swap — the player coming on from the bench, or the one coming off. A green bar tells you who is moving, and every row on the other side lights up. Tap the row you are swapping with and it is done.</p>
+    <p>The whole thing works in the list, so on a phone you never have to see the pitch. If you would rather use the pitch, tapping a player there still finishes an armed swap, and tapping a player with nothing armed opens his card with a <b>Bring on from the bench</b> list.</p>
+    <p class="hint">While a swap is armed the name boxes on the lit rows go quiet, so a tap anywhere on the row counts. <b>Cancel</b> or <b>Esc</b> backs out, and undo reverses a sub.</p>
     <h4>Saved line-ups</h4>
     <p>Hit <b>Save this line-up</b> at the top of the Lineup tab and whatever is on the board you are editing gets put on the shelf — formation, every name and number, where each player is standing, the bench, the kit colour and anything you have drawn on top. It is named for you; type over the name in the list to change it.</p>
     <p><b>Load</b> puts it back onto the board you are editing, so with two or three boards up you can pull a different XI onto each one. Loading replaces what was there, and undo (<b>&#8984;Z</b>, or the undo arrow on a phone) puts it back.</p>
@@ -4408,7 +4507,7 @@ function wireMini(sv, i){
     const tk = e.target.closest("[data-pid]");
     if(!tk) return;
     const idx = +tk.dataset.pid;
-    if(S.swapFrom !== null){ doSwap(idx); refreshMini(i); return; }
+    if(S.swapFrom && typeof S.swapFrom === "object"){ doSwap(idx); refreshMini(i); return; }
     e.preventDefault();
     pushHist();
     const pl = bd.players[idx];
@@ -6195,7 +6294,8 @@ function playerSheet(s, idx){
         pushHist();
         const tn=p.name, tnum=p.num;
         p.name=b.name; p.num=b.num; b.name=tn; b.num=tnum;
-        closeSheet(); renderRoster(); renderPlayers(); updateStatus(); syncHash();
+        closeSheet(); if(typeof linkPush==="function") linkPush();
+        renderRoster(); renderPlayers(); render(); updateStatus(); syncHash();
         toast(p.name+" is on");
       };
       g.appendChild(btn);
