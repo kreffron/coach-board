@@ -195,6 +195,12 @@ body.tab-squad #mBtnPng,body.tab-squad #mBtnPrint{display:none}
 #lbColor::-moz-color-swatch{border:none;border-radius:50%}
 #lbClear{background:none;border:none;color:var(--muted);font-size:18px;line-height:1;
   min-width:30px;min-height:30px;display:flex;align-items:center;justify-content:center}
+.lbbtn{background:var(--panel2);border:1px solid var(--line);border-radius:7px;color:var(--txt);
+  font-size:12px;font-weight:800;padding:0 10px;min-height:30px;min-width:32px;white-space:nowrap}
+.lbbtn:hover{background:#27313a;border-color:#3a4855}
+.lbbtn.go{background:var(--accent);border-color:var(--accent);color:#07130c}
+.lbbtn.on{background:var(--accent);border-color:var(--accent);color:#07130c}
+#lbAdd{font-size:15px;padding:0 8px}
 .lurow .lubin{min-width:34px;min-height:34px}
 #btnZoomReset{position:absolute;right:14px;top:14px;z-index:15;display:none;
   background:rgba(11,16,20,.82);border:1px solid var(--line);border-radius:20px;
@@ -619,6 +625,10 @@ textarea.inp{resize:vertical;min-height:64px;font-size:12.5px}
             <span id="lbWhat"></span>
             <input id="lbIn" maxlength="4" autocomplete="off" spellcheck="false" aria-label="Label for the selected object">
             <input type="color" id="lbColor" aria-label="Colour of the selected object" title="Colour">
+            <button id="lbAdd" class="lbbtn" title="Pick more, then group them so they happen together" aria-label="Pick more than one">＋</button>
+            <button id="lbGroup" class="lbbtn go" title="These happen at the same moment" aria-label="Group them">Group</button>
+            <button id="lbUngroup" class="lbbtn" title="Let them happen one at a time again" aria-label="Ungroup">Ungroup</button>
+            <button id="lbDone" class="lbbtn" aria-label="Finished picking">Done</button>
             <button id="lbClear" title="Clear this label" aria-label="Clear this label">&times;</button>
           </div>
         </div>
@@ -2559,14 +2569,15 @@ const C = {
 };
 const PALETTE = [null,"#ffffff","#f5a524","#38bdf8","#e2574c","#37c86b","#c77dff","#111827"];
 
-const BUILD = "2026-08-25 · pick your pitch";
+const BUILD = "2026-08-25 · groups";
 
 let uid = 1;
 const nid = () => "s" + (uid++);
 
 const S = {
   tab:"lineup", tool:"select", color:null, width:5,
-  sel:null, drag:null, k:1, rot:false, rotAuto:true, phone:false, seenHint:false, editIdx:null,
+  sel:null, selx:[], addSel:false,   // selx: the others picked alongside S.sel
+  drag:null, k:1, rot:false, rotAuto:true, phone:false, seenHint:false, editIdx:null,
   gs:1,                          // glyph scale — bumped up on phones
   zoom:{s:1, x:0, y:0},          // pinch zoom, offset in view units
   boards:[{
@@ -2585,6 +2596,8 @@ const S = {
 Object.defineProperty(S, "lineup", { get(){ return S.boards[S.bi] || S.boards[0]; } });
 /* only the two pitch tabs have a board; the squad tab is a database page */
 const board = () => S.tab === "drills" ? S.drills : S.lineup;
+/* one thing is usually picked; several can be, to group them */
+const isSel = id => S.sel === id || (S.selx && S.selx.indexOf(id) >= 0);
 /* history follows whatever board() just handed back, so a change made from the
    squad page lands on the line-up's undo stack rather than falling on the floor */
 const histKey = () => S.tab === "drills" ? "drills" : "lineup";
@@ -2846,7 +2859,7 @@ function renderShape(s, layer){
     case "opp":  playerGlyph(g,a.x,a.y, s.c||C.opp, "#ffffff", s.o&&s.o.t, null); break;
     case "neut": playerGlyph(g,a.x,a.y, s.c||C.neut, "#ffffff", s.o&&s.o.t, null, "#101820"); break;
   }
-  if(S.sel===s.id){
+  if(isSel(s.id)){
     const bb=g.getBBox();
     el("rect",{x:bb.x-6*k,y:bb.y-6*k,width:bb.width+12*k,height:bb.height+12*k,
       fill:"none",stroke:"#37c86b","stroke-width":2.4*k,"stroke-dasharray":`${8*k} ${6*k}`,
@@ -2986,7 +2999,7 @@ function applySnap(str){
   if(d.players) b.players=d.players;
   if(d.bench) b.bench=d.bench;
   SNAP_KEYS.forEach(k=>{ if(d[k]!==undefined) b[k]=d[k]; });
-  S.sel=null;
+  S.sel=null; S.selx=[];
   if(S.tab!=="drills"){
     if(typeof refreshLineupControls==="function") refreshLineupControls();
     if(typeof buildBoardBar==="function") buildBoardBar();
@@ -3022,7 +3035,7 @@ function loadDrill(d){
   D.view = d.view||"blank";
   D.shapes = (d.items||[]).map(itemToShape);
   D.drillId = d.id;
-  S.sel=null;
+  S.sel=null; S.selx=[];
   render();
 }
 
@@ -3128,7 +3141,7 @@ function buildToolbar(){
   tb.appendChild(ww);
 }
 function setTool(t){
-  S.tool=t; S.sel=null;
+  S.tool=t; S.sel=null; S.selx=[]; S.addSel=false;
   svg.classList.toggle("mode-draw", t!=="select"&&t!=="eraser");
   svg.classList.toggle("mode-erase", t==="eraser");
   buildToolbar(); renderHandles(); updateStatus();
@@ -3140,7 +3153,7 @@ function applyToSel(patch){
   pushHist(); Object.assign(s,patch); render();
 }
 function clearDrawings(){
-  pushHist(); board().shapes=[]; S.sel=null; render();
+  pushHist(); board().shapes=[]; S.sel=null; S.selx=[]; render();
 }
 function updateStatus(){
   const names={select:"Select",pen:"Free draw",line:"Line",pass:"Pass",run:"Run",carry:"Dribble",
@@ -3228,17 +3241,25 @@ svg.addEventListener("pointerdown", e=>{
       pushHist();
       dragInfo={kind:"player", idx, sx:e.clientX, sy:e.clientY,
         off:{x:p.x-S.lineup.players[idx].x, y:p.y-S.lineup.players[idx].y}};
-      S.sel=null; renderHandles(); return;
+      S.sel=null; S.selx=[]; renderHandles(); return;
     }
     const sg=e.target.closest("[data-sid]");
     if(sg){
       const s=board().shapes.find(x=>x.id===sg.dataset.sid);
+      // shift-click on a laptop, or the ＋ button on a phone, picks a second
+      // thing instead of dropping the first — that is how a group is made
+      const more = e.shiftKey || e.metaKey || e.ctrlKey || S.addSel;
+      if(more && S.sel && typeof toggleSelMore==="function"){
+        lastHit={id:null,t:0};
+        toggleSelMore(s.id);
+        return;
+      }
       // the board swallows the browser's own dblclick, so spot it ourselves:
       // twice on the same object opens its label ready to type
       const now=Date.now();
       const twice = lastHit.id===s.id && (now-lastHit.t)<420;
       lastHit={id:s.id, t:now};
-      S.sel=s.id; pushHist();
+      S.sel=s.id; S.selx=[]; pushHist();
       dragInfo={kind:"shape", id:s.id, last:p};
       render();
       if(twice && typeof labelKind==="function" && labelKind(s)){
@@ -3253,9 +3274,9 @@ svg.addEventListener("pointerdown", e=>{
     if(S.zoom.s>1.02 && e.pointerType!=="touch"){
       const r=svg.getBoundingClientRect(), vb=curVB();
       pan={sx:e.clientX, sy:e.clientY, x0:S.zoom.x, y0:S.zoom.y, upp:vb[2]/r.width};
-      S.sel=null; render(); return;
+      S.sel=null; S.selx=[]; render(); return;
     }
-    S.sel=null; render(); return;
+    S.sel=null; S.selx=[]; render(); return;
   }
   if(S.tool==="text"){ openTextInput(p, e); return; }
   if(PLACE.has(S.tool)){
@@ -3366,7 +3387,10 @@ function previewTmp(){
   renderShapeInto(tmp,g);
 }
 function renderShapeInto(s,layer){
-  const keep=S.sel; S.sel=null; renderShape(s,layer); S.sel=keep;
+  const keep=S.sel, keepx=S.selx;      // a preview is never drawn as "picked"
+  S.sel=null; S.selx=[];
+  renderShape(s,layer);
+  S.sel=keep; S.selx=keepx;
 }
 
 /* text input overlay */
@@ -3401,10 +3425,11 @@ document.addEventListener("keydown", e=>{
   if((e.metaKey||e.ctrlKey) && k==="z"){ e.preventDefault(); e.shiftKey?redo():undo(); return; }
   if((e.metaKey||e.ctrlKey) && k==="y"){ e.preventDefault(); redo(); return; }
   if(e.key==="Delete"||e.key==="Backspace"){
-    if(S.sel){ e.preventDefault(); pushHist(); board().shapes=board().shapes.filter(s=>s.id!==S.sel); S.sel=null; render(); }
+    const gone=new Set(S.sel ? [S.sel].concat(S.selx||[]) : []);
+    if(gone.size){ e.preventDefault(); pushHist(); board().shapes=board().shapes.filter(s=>!gone.has(s.id)); S.sel=null; S.selx=[]; render(); }
     return;
   }
-  if(e.key==="Escape"){ S.sel=null; if(swapArmed()) cancelSwap(); S.swapFrom=null; setTool("select"); renderRoster(); render(); return; }
+  if(e.key==="Escape"){ S.sel=null; S.selx=[]; S.addSel=false; if(swapArmed()) cancelSwap(); S.swapFrom=null; setTool("select"); renderRoster(); render(); return; }
   if(e.key==="?"){ e.preventDefault(); openHelp(); return; }
   // the squad page has no board, so a drawing shortcut there would only
   // change the tool behind your back
@@ -3704,7 +3729,7 @@ loadDrill=function(d){
       runs[i].o = Object.assign({}, runs[i].o, {on:t[0], end:t[1]});
     });
   }
-  D.drillId=d.id; S.sel=null;
+  D.drillId=d.id; S.sel=null; S.selx=[];
   const pv=$("#pitchViewD"); if(pv) pv.value=D.view;
   render(); updateStatus();
   if(typeof updateDrillBar==="function") updateDrillBar();
@@ -3914,7 +3939,7 @@ function openHelp(){
     </ul>
     <h4>Shortcuts</h4>
     <ul><li><b>V</b> select · <b>P</b> pen · <b>S</b> pass · <b>R</b> run · <b>D</b> dribble · <b>C</b> curved arrow · <b>T</b> text · <b>E</b> eraser · <b>L</b> line · <b>Z</b> zone</li>
-    <li><b>Delete</b> removes the selected object · <b>⌘/Ctrl+Z</b> undo · <b>⌘/Ctrl+Shift+Z</b> redo · <b>Esc</b> back to select</li>
+    <li><b>Delete</b> removes everything picked · <b>Shift-click</b> picks more than one · <b>⌘/Ctrl+Z</b> undo · <b>⌘/Ctrl+Shift+Z</b> redo · <b>Esc</b> back to select</li>
     <li>Select a curved arrow, then drag the green dot to change how much it bends.</li></ul>
     <h4>Saving</h4>
     <p>Nothing is stored in the browser. <b>Save</b> writes a .json file with your lineup, names, drawings and any drills you built; <b>Open</b> loads it back. <b>PNG</b> exports the board as an image and <b>Print</b> gives you a drill card or a team sheet.</p>
@@ -3952,6 +3977,17 @@ function openHelp(){
     <p>Click any player, pass or run with the <b>arrow</b> tool and a small box appears at the top left of the board. Type into it: a shirt number on a player, a number on a pass, a letter on a run. Click the same thing <b>twice</b> to jump straight into that box. Drop a new player on the board and the box is already waiting.</p>
     <p>The <b>1&middot;2&middot;3</b> button on the toolbar does the whole board at once — every pass gets 1, 2, 3 and every run gets A, B, C, in the order you drew them. On a phone it is under the <b>&hellip;</b> button, called <b>Number the passes and runs</b>.</p>
     <p class="hint">The badge on a pass or a run is not just decoration: <b>Play</b> follows those numbers. Renumber a pass and the animation reorders itself to match, which is also how you fix a drill that plays back in the wrong order.</p>
+    <h4>Making things happen at the same time</h4>
+    <p>Runs are timed off <b>the ball</b>, not off each other, so several runners keyed to the same pass already break together. To say so outright, <b>pick them and group them</b>.</p>
+    <ul>
+      <li><b>Shift-click</b> a second, third, fourth object on a laptop. On a phone, tap one, hit <b>＋</b> in the bar, then tap the others.</li>
+      <li>With two or more picked the bar reads <b>3 picked</b>. Hit <b>Group</b>.</li>
+      <li><b>Runs</b> grouped together break as one and arrive as one. They end up sharing a letter — that is all a group is, so you can see it on the board.</li>
+      <li><b>Passes</b> grouped together are struck at the same moment, each with its own ball. Two balls in the air at once is exactly right for a warm-up in two lines.</li>
+      <li>Pick <b>a pass and some runs</b> together and the runners go as that ball is struck and arrive as it lands — the way a corner routine actually works.</li>
+      <li><b>Ungroup</b> puts them back on their own. Select just one of a group and the same button takes only that one out.</li>
+    </ul>
+    <p class="hint">Because a group is only a shared badge, everything else still works on it: <b>1&middot;2&middot;3</b> renumbers the board without breaking your groups, and grouped work is saved, shared and reopened like anything else. Picking several also lets you recolour or delete the lot in one go.</p>
     <h4>Your own drills</h4>
     <p>Hit <b>New</b> in the Drills tab, draw it on the board, fill in the details under <b>Build</b>, then <b>Save</b>. It goes into your library and stays on this device — no link to keep and no file to remember.</p>
     <p><b>Pick the pitch first.</b> At the top of Build there are six little pictures — blank grass, the full pitch, either half, two-thirds and the final third. Tap one and the board redraws on the spot, so a corner routine can be drawn on the final third and a small-sided game on open grass. The drill remembers it and opens on that pitch every time, on any device the drill travels to.</p>
@@ -3984,7 +4020,7 @@ $("#helpModal").addEventListener("click", e=>{ if(e.target.id==="helpModal") e.c
    INIT
    ============================================================ */
 function switchTab(t){
-  S.tab=t; S.sel=null; S.swapFrom=null;
+  S.tab=t; S.sel=null; S.selx=[]; S.addSel=false; S.swapFrom=null;
   $$("#tabs button").forEach(b=>b.classList.toggle("active", b.dataset.tab===t));
   $("#panelLineup").classList.toggle("panel-hide", t!=="lineup");
   $("#panelDrills").classList.toggle("panel-hide", t!=="drills");
@@ -4387,7 +4423,7 @@ function setBoardCount(n){
 }
 function setActiveBoard(i, quiet){
   if(i<0 || i>=S.boards.length) return;
-  S.bi = i; S.sel = null; S.editIdx = null;
+  S.bi = i; S.sel = null; S.selx = []; S.editIdx = null;
   refreshLineupControls();
   buildBoardBar(); renderRoster(); updateStatus();
   if(!quiet){ render(); syncHash(); }
@@ -4409,7 +4445,7 @@ function linkPush(){
 /* ---------- drawing one small board ---------- */
 function renderMini(sv, bd, k){
   const keep = {defs, gRoot, gBg, gPitch, gZone, gShape, gToken, gHandle,
-                rot:S.rot, k:S.k, sel:S.sel, vw:vwOverride};
+                rot:S.rot, k:S.k, sel:S.sel, selx:S.selx, vw:vwOverride};
   clear(sv);
   const v = VB[bd.view] || VB.full;
   defs   = el("defs", {}, sv);
@@ -4420,7 +4456,7 @@ function renderMini(sv, bd, k){
   gShape = el("g", {}, gRoot);
   gToken = el("g", {}, gRoot);
   gHandle= el("g", {}, gRoot);
-  S.rot = true; S.sel = null; S.k = k; vwOverride = bd.view;
+  S.rot = true; S.sel = null; S.selx = []; S.k = k; vwOverride = bd.view;
   mkCache.clear();
   sv.setAttribute("viewBox", [v[1], -(v[0]+v[2]), v[3], v[2]].join(" "));
   drawPitch(bd.view);
@@ -4429,7 +4465,7 @@ function renderMini(sv, bd, k){
   sv.__root = gRoot;
   defs=keep.defs; gRoot=keep.gRoot; gBg=keep.gBg; gPitch=keep.gPitch;
   gZone=keep.gZone; gShape=keep.gShape; gToken=keep.gToken; gHandle=keep.gHandle;
-  S.rot=keep.rot; S.k=keep.k; S.sel=keep.sel; vwOverride=keep.vw;
+  S.rot=keep.rot; S.k=keep.k; S.sel=keep.sel; S.selx=keep.selx; vwOverride=keep.vw;
   mkCache.clear();
 }
 
@@ -4811,8 +4847,17 @@ function editDrill(d){
 }
 
 function saveDrill(){
-  const nameEl = $("#edName");
-  if(!nameEl){ newDrill(); return; }
+  let nameEl = $("#edName");
+  if(!nameEl){
+    /* The form was not open. Never throw away what is on the board for that —
+       put the form up around the drawing that is already there. */
+    if((S.drills.shapes||[]).length){
+      drillForm(null);
+      nameEl = $("#edName");
+      if(nameEl){ nameEl.focus(); toast("Give it a name, then hit Save again"); return; }
+    }
+    newDrill(); return;
+  }
   const name = nameEl.value.trim();
   if(!name){ nameEl.focus(); nameEl.style.borderColor = "#e2574c"; return; }
   const val = id => { const n = $(id); return n ? n.value.trim() : ""; };
@@ -4900,7 +4945,15 @@ applyState = function(d){
 /* Keep the picture picker and the Library's drop-down showing the same
    thing, whichever one the coach used and however the view got changed. */
 const _setSegLib = setSeg;
-setSeg = function(k){ _setSegLib(k); if(k === "build") renderPitchPick(); };
+setSeg = function(k){
+  _setSegLib(k);
+  if(k !== "build") return;
+  renderPitchPick();
+  /* Build is never a dead end: if there is no form up, put an empty one there
+     around whatever is already drawn, rather than leaving Save with nothing. */
+  const host = $("#drillEdit");
+  if(host && !host.querySelector("#edName")) drillForm(null);
+};
 
 const _loadDrillLib = loadDrill;
 loadDrill = function(d){ _loadDrillLib(d); renderPitchPick(); };
@@ -4946,15 +4999,70 @@ function selShape(){
   return (board().shapes || []).find(x => x.id === S.sel) || null;
 }
 
+/* ---------- picking more than one ----------
+   S.sel is the one you picked first; S.selx holds the rest. Shift-click adds
+   on a laptop, the ＋ button does the same job with a thumb. */
+function selIds(){ return S.sel ? [S.sel].concat(S.selx || []) : []; }
+function selShapes(){
+  const ids = selIds(); if(!ids.length) return [];
+  const sh = board().shapes || [];
+  return ids.map(id => sh.find(x => x.id === id)).filter(Boolean);
+}
+function toggleSelMore(id){
+  if(!S.sel){ S.sel = id; S.selx = []; render(); return; }
+  if(id === S.sel){
+    S.sel = (S.selx && S.selx.length) ? S.selx.shift() : null;   // drop the first, promote the next
+    if(!S.sel) S.selx = [];
+  }else{
+    S.selx = S.selx || [];
+    const i = S.selx.indexOf(id);
+    if(i >= 0) S.selx.splice(i,1); else S.selx.push(id);
+  }
+  render();
+}
+const canGroup = s => isRunShape(s) || isBallShape(s);
+/* how many things on the board carry this one's badge */
+function groupSize(s){
+  if(!s || !canGroup(s)) return 0;
+  const n = s.o && s.o.n;
+  if(n === undefined || n === null || n === "") return 0;
+  const same = isRunShape(s) ? isRunShape : isBallShape;
+  return (board().shapes || []).filter(x => same(x) && x.o && x.o.n === n).length;
+}
+
 function syncLabelBar(){
   const bar = $("#labelBar"); if(!bar) return;
   const inp = $("#lbIn"), what = $("#lbWhat");
+  const btnAdd = $("#lbAdd"), btnG = $("#lbGroup"), btnU = $("#lbUngroup"),
+        btnDone = $("#lbDone"), btnClr = $("#lbClear");
+  const show = n => { if(n) n.style.display = ""; };
+  const hide = n => { if(n) n.style.display = "none"; };
+  const many = selIds().length > 1;
   const s = selShape(), k = labelKind(s);
-  if(!k){ bar.classList.remove("on"); return; }
+
+  if(!s || (!k && !many)){ bar.classList.remove("on"); S.addSel = false; return; }
   bar.classList.add("on");
-  what.textContent = k.what;
+  [inp, btnAdd, btnG, btnU, btnDone, btnClr].forEach(hide);
+
+  if(many){
+    /* several things picked — this bar is about tying them together */
+    const n = selShapes().filter(canGroup).length;
+    what.textContent = selIds().length + " picked";
+    bar.title = "Group them and they happen at the same moment";
+    if(n > 1){ show(btnG); show(btnU); }
+    show(btnDone);
+    return;
+  }
+
+  const g = groupSize(s);
+  what.textContent = k.what + (g > 1 ? " ·" + g : "");
   inp.placeholder  = k.ph;
-  bar.title = k.hint;
+  bar.title = g > 1
+    ? "This one shares its badge with " + (g-1) + " other" + (g===2?"":"s") + ", so they move together"
+    : k.hint;
+  show(inp); show(btnClr);
+  if(canGroup(s)){ if(g > 1) show(btnU); else show(btnAdd); }
+  if(btnAdd) btnAdd.classList.toggle("on", !!S.addSel);
   // never overwrite what the coach is in the middle of typing
   if(document.activeElement !== inp) inp.value = (s.o && s.o[k.key]) || "";
 }
@@ -4966,6 +5074,78 @@ function setLabel(v){
   render(); syncHash();
 }
 
+/* ---------- groups: things that happen at the same moment ----------
+   No new hidden field. Two runs that both say A go together; two passes that
+   both say 1 are struck together, each with its own ball. That is the whole
+   idea, and it shows on the board because you can read the badges.        */
+function badgesInUse(kindFn, skip){
+  const out = new Set(), off = new Set((skip||[]).map(s=>s.id));
+  (board().shapes || []).forEach(s=>{
+    if(!kindFn(s) || off.has(s.id)) return;
+    const n = s.o && s.o.n;
+    if(n) out.add(String(n).toUpperCase());
+  });
+  return out;
+}
+function freeNumber(skip){
+  const used = badgesInUse(isBallShape, skip);
+  let i = 1; while(used.has(String(i)) && i < 99) i++;
+  return i;
+}
+function freeLetter(skip){
+  const used = badgesInUse(isRunShape, skip);
+  for(let i=0;i<26;i++){ const c = String.fromCharCode(65+i); if(!used.has(c)) return c; }
+  return "A";
+}
+
+function groupSel(){
+  const picked = selShapes().filter(canGroup);
+  if(picked.length < 2){ toast("Pick two or more passes or runs first"); return; }
+  pushHist();
+  const balls = picked.filter(isBallShape), runs = picked.filter(isRunShape);
+  let num = null, ltr = null;
+
+  if(balls.length){
+    const have = balls.map(s => s.o && s.o.n).filter(Boolean)
+                      .map(n => parseInt(n,10)).filter(n => !isNaN(n)).sort((a,b)=>a-b);
+    const taken = badgesInUse(isBallShape, picked);
+    num = (have.length && !taken.has(String(have[0]))) ? have[0] : freeNumber(picked);
+    balls.forEach(s=>{ s.o = s.o || {}; s.o.n = String(num); });
+  }
+  if(runs.length){
+    const have = runs.map(s => s.o && s.o.n).filter(Boolean).map(n => String(n).toUpperCase())
+                     .filter(n => /^[A-Z]$/.test(n)).sort();
+    const taken = badgesInUse(isRunShape, picked);
+    ltr = (have.length && !taken.has(have[0])) ? have[0] : freeLetter(picked);
+    runs.forEach(s=>{ s.o = s.o || {}; s.o.n = ltr; delete s.o.on; delete s.o.end; });
+  }
+  /* a pass picked along with runs means "they go as it is struck" */
+  if(balls.length && runs.length) runs.forEach(s=>{ s.o.on = num; s.o.end = num; });
+
+  S.addSel = false;          // the picking stays lit, but taps go back to normal
+  render(); syncHash();
+  const bits = [];
+  if(runs.length)  bits.push(runs.length + " run" + (runs.length===1?"":"s") + " as " + ltr);
+  if(balls.length) bits.push(balls.length + " pass" + (balls.length===1?"":"es") + " as " + num);
+  toast(balls.length && runs.length
+    ? "Grouped — the runs go as pass " + num + " is struck"
+    : "Grouped " + bits.join(" and ") + " — they now go together");
+}
+
+function ungroupSel(){
+  const picked = selShapes().filter(canGroup);
+  if(!picked.length){ toast("Pick a pass or a run first"); return; }
+  pushHist();
+  picked.forEach(s=>{
+    s.o = s.o || {};
+    delete s.o.on; delete s.o.end;
+    if(groupSize(s) > 1) s.o.n = isRunShape(s) ? freeLetter([s]) : String(freeNumber([s]));
+  });
+  render(); syncHash();
+  toast(picked.length === 1 ? "Out of the group — it goes on its own now"
+                            : "Ungrouped — each one goes on its own now");
+}
+
 /* stamp the whole board the way the built-in drills are laid out */
 function numberSequence(){
   const sh = board().shapes || [];
@@ -4973,8 +5153,33 @@ function numberSequence(){
   const runs  = sh.filter(isRunShape);
   if(!balls.length && !runs.length){ toast("Draw some passes or runs first"); return; }
   pushHist();
-  balls.forEach((s,i)=>{ s.o = s.o || {}; s.o.n = String(i+1); });
-  runs.forEach((s,i)=>{ s.o = s.o || {}; s.o.n = String.fromCharCode(65 + (i % 26)); });
+  /* Renumber in the order drawn — but anything already sharing a badge keeps
+     sharing one, or the 1·2·3 button would quietly break every group. */
+  const numMap = new Map(); let n = 0;
+  balls.forEach(s=>{
+    const old = s.o && s.o.n;
+    let v;
+    if(old && numMap.has(String(old))) v = numMap.get(String(old));
+    else { v = ++n; if(old) numMap.set(String(old), v); }
+    s.o = s.o || {}; s.o.n = String(v);
+  });
+  const ltrMap = new Map(); let r = 0;
+  runs.forEach(s=>{
+    const old = s.o && s.o.n;
+    let v;
+    if(old && ltrMap.has(String(old))) v = ltrMap.get(String(old));
+    else { v = String.fromCharCode(65 + (r++ % 26)); if(old) ltrMap.set(String(old), v); }
+    s.o = s.o || {}; s.o.n = v;
+  });
+  /* a run keyed to a pass has to follow that pass to its new number */
+  runs.forEach(s=>{
+    ["on","end"].forEach(key=>{
+      const cur = s.o[key];
+      if(cur === undefined || cur === null || cur === 0) return;
+      const moved = numMap.get(String(cur));
+      if(moved) s.o[key] = moved;
+    });
+  });
   render(); syncHash();
   const bit = (n,one,many) => n + " " + (n === 1 ? one : many);
   toast("Numbered " + bit(balls.length,"pass","passes") + " and " + bit(runs.length,"run","runs"));
@@ -4991,6 +5196,18 @@ function numberSequence(){
   });
   const cl = $("#lbClear");
   if(cl) cl.onclick = ()=>{ pushHist(); inp.value = ""; setLabel(""); inp.focus(); };
+
+  const add = $("#lbAdd");
+  if(add) add.onclick = ()=>{
+    S.addSel = !S.addSel;
+    syncLabelBar();
+    toast(S.addSel ? "Now tap the others you want with it, then hit Group"
+                   : "Picking one at a time again");
+  };
+  const gb = $("#lbGroup");   if(gb) gb.onclick = groupSel;
+  const ub = $("#lbUngroup"); if(ub) ub.onclick = ungroupSel;
+  const db = $("#lbDone");
+  if(db) db.onclick = ()=>{ S.sel = null; S.selx = []; S.addSel = false; render(); };
 
   /* tapping an object twice focuses this field — see the select tool in 04_ui */
 })();
@@ -5066,8 +5283,9 @@ function shapeColour(s){
   return "#ffffff";
 }
 function setSelColour(c){
-  const s = selShape(); if(!s) return;
-  s.c = c; render(); syncHash();
+  const ss = selShapes(); if(!ss.length) return;
+  ss.forEach(s=>{ s.c = c; });        // pick several, recolour them in one go
+  render(); syncHash();
 }
 /* keep the Player button showing what colour it will drop */
 function tintPlayerTool(){
@@ -5919,15 +6137,31 @@ function buildPlan(){
   const tokens=shapes.filter(s=>TOKEN_T.has(s.t));
   if(!balls.length && !runs.length) return null;
 
+  /* Passes carrying the SAME number happen at the same moment — that is what
+     the Group button does. They all leave together, each takes its own flight
+     time, and the next number does not start until the slowest has landed.
+     One ball per lane, so two balls can be in the air at once.            */
   const GAP=0.14;
   let cursor=0;
-  const steps=balls.map(s=>{
-    const d=clamp(segLen(s)/230, 0.45, 1.7);
-    const st={s, start:cursor, end:cursor+d, end_pt:s.p[s.p.length-1]};
-    cursor=st.end+GAP;
-    return st;
-  });
+  const steps=[];
+  for(let i=0;i<balls.length;){
+    const k=seqKey(balls[i]);
+    let j=i+1;
+    if(k!==null) while(j<balls.length && seqKey(balls[j])===k) j++;
+    let slotEnd=cursor;
+    for(let m=i;m<j;m++){
+      const s=balls[m];
+      const d=clamp(segLen(s)/230, 0.45, 1.7);
+      steps.push({s, start:cursor, end:cursor+d, end_pt:s.p[s.p.length-1], lane:m-i});
+      if(cursor+d>slotEnd) slotEnd=cursor+d;
+    }
+    cursor=slotEnd+GAP;
+    i=j;
+  }
   const ballEnd=Math.max(0, cursor-GAP);
+  const laneCount=steps.reduce((a,st)=>Math.max(a, st.lane+1), 1);
+  const byLane=[];
+  for(let L=0;L<laneCount;L++) byLane.push(steps.filter(st=>st.lane===L));
 
 
   // "on" = the pass this run is timed off, "end" = the pass it must arrive with.
@@ -5936,6 +6170,15 @@ function buildPlan(){
     if(n===0 || n===null || n===undefined) return null;
     return steps.find(st=>seqKey(st.s)===n) || steps[n-1] || null;
   };
+  /* With no ball on the board there is nothing to time the runs off, so they
+     go one after another — but runs sharing a letter share a turn. */
+  const slotOf=new Map(); let nSlot=0;
+  runs.forEach(r=>{
+    const k=seqKey(r), key = k===null ? "i"+r.id : "k"+k;
+    if(!slotOf.has(key)) slotOf.set(key, nSlot++);
+  });
+  const runSlot = r => { const k=seqKey(r); return slotOf.get(k===null ? "i"+r.id : "k"+k) || 0; };
+
   const moves=[];
   runs.forEach((r,i)=>{
     const nat=clamp(segLen(r)/210, 0.6, 2.3);
@@ -5958,8 +6201,25 @@ function buildPlan(){
         if(d<bd){ bd=d; best=st; }
       });
       start=Math.max(0, Math.min(best.start, best.end-nat)); dur=Math.max(0.4, best.end-start);
-    } else { start=i*0.45; dur=nat; }
+    } else { start=runSlot(r)*0.45; dur=nat; }
     moves.push({ shape:r, start, dur, ease:true });
+  });
+  /* Runs carrying the SAME letter break together and arrive together, whatever
+     the board would otherwise have made of them individually. */
+  const together=new Map();
+  moves.forEach(m=>{
+    if(!isRunAct(m.shape)) return;
+    const k=seqKey(m.shape); if(k===null) return;
+    if(!together.has(k)) together.set(k, []);
+    together.get(k).push(m);
+  });
+  together.forEach(list=>{
+    if(list.length<2) return;
+    // they go on the latest of their triggers, so the group breaks crisply as
+    // one rather than the early ones crawling across the whole sequence
+    const s0=Math.max(...list.map(m=>m.start));
+    const e0=Math.max(...list.map(m=>m.start+m.dur));
+    list.forEach(m=>{ m.start=s0; m.dur=Math.max(0.4, e0-s0); });
   });
   // whoever carries the ball travels with it
   steps.forEach(st=>{
@@ -5986,7 +6246,8 @@ function buildPlan(){
 
   const dur=Math.max(ballEnd, ...moves.map(m=>m.start+m.dur), 0.8)+0.55;
   const b0=steps.length ? {x:steps[0].s.p[0].x, y:steps[0].s.p[0].y} : null;
-  return {steps, moves, tokens, dur, b0, shift: steps.length>=3 && !!b0};
+  return {steps, moves, tokens, dur, b0, byLane, lanes:laneCount,
+          shift: steps.length>=3 && !!b0};
 }
 
 /* ---------- the shape moves as a unit ----------
@@ -6029,17 +6290,20 @@ function tokenPos(P, tk, t){
   const bl=Math.max(0, Math.min(1, (t-lastEnd)/F, (nextStart-t)/F)) * (near*near*(3-2*near));
   return {x:base.x+sh.x*bl, y:base.y+sh.y*bl};
 }
-function ballAt(P, t){
+function laneAt(P, t, lane){
+  const steps=(P.byLane && P.byLane[lane]) || P.steps;
   let bp=null;
-  for(let i=0;i<P.steps.length;i++){
-    const st=P.steps[i];
+  for(let i=0;i<steps.length;i++){
+    const st=steps[i];
     if(t<st.start) break;
     bp = (t<=st.end) ? ptOn(st.s, (t-st.start)/Math.max(0.001, st.end-st.start)) : st.end_pt;
     if(t<=st.end) break;
   }
-  if(!bp && P.steps.length) bp=P.steps[0].s.p[0];
+  if(!bp && steps.length) bp=steps[0].s.p[0];
   return bp;
 }
+/* the main ball — the one the players' shape shuffles around */
+function ballAt(P, t){ return laneAt(P, t, 0); }
 function canAnimate(){
   if(S.tab!=="drills" || S.drills.noAnim) return false;   // reference diagrams don't play
   const shapes=board().shapes||[];
@@ -6059,16 +6323,21 @@ function animStart(){
   ANIM.dur=ANIM.plan.dur;
   if(ANIM.t>=ANIM.dur-0.01) ANIM.t=0;
   ANIM.on=true;
-  S.sel=null;
+  S.sel=null; S.selx=[]; S.addSel=false;
   render();
   ANIM.refs=animRefs();
-  // a moving ball, drawn above everything
-  const g=el("g",{id:"animBall"},gHandle);
+  // a moving ball, drawn above everything — one per lane, so passes that were
+  // grouped together travel at the same time with a ball each
   const r=11*S.k;
-  el("circle",{cx:0,cy:0,r:r*1.7,fill:"#000","fill-opacity":".22"},g);
-  el("circle",{cx:0,cy:0,r,fill:"#ffffff",stroke:"#101820","stroke-width":2*S.k},g);
-  el("circle",{cx:0,cy:0,r:r*0.42,fill:"#101820"},g);
-  ANIM.ball=g;
+  ANIM.balls=[];
+  for(let L=0; L<Math.max(1, ANIM.plan.lanes||1); L++){
+    const g=el("g",{id: L? "animBall"+L : "animBall"},gHandle);
+    el("circle",{cx:0,cy:0,r:r*1.7,fill:"#000","fill-opacity":".22"},g);
+    el("circle",{cx:0,cy:0,r,fill:"#ffffff",stroke:"#101820","stroke-width":2*S.k},g);
+    el("circle",{cx:0,cy:0,r:r*0.42,fill:"#101820"},g);
+    ANIM.balls.push(g);
+  }
+  ANIM.ball=ANIM.balls[0];
   ANIM.playing=true; ANIM.last=performance.now();
   ANIM.raf=requestAnimationFrame(animTick);
   updatePlayBar();
@@ -6077,7 +6346,7 @@ function animStop(reset){
   ANIM.playing=false;
   if(ANIM.raf) cancelAnimationFrame(ANIM.raf);
   ANIM.raf=null;
-  if(reset!==false){ ANIM.on=false; ANIM.t=0; ANIM.plan=null; ANIM.refs=null; ANIM.ball=null; render(); }
+  if(reset!==false){ ANIM.on=false; ANIM.t=0; ANIM.plan=null; ANIM.refs=null; ANIM.ball=null; ANIM.balls=null; render(); }
   updatePlayBar();
 }
 function animPause(){
@@ -6120,9 +6389,23 @@ function animFrame(){
     else g.removeAttribute("transform");
   });
 
-  // the ball
-  if(ANIM.ball && bp) ANIM.ball.setAttribute("transform",`translate(${bp.x},${bp.y})`);
-  if(ANIM.ball) ANIM.ball.setAttribute("opacity", P.steps.length? "1":"0");
+  // the ball, or balls
+  (ANIM.balls||[]).forEach((g,lane)=>{
+    if(lane===0){
+      if(bp) g.setAttribute("transform",`translate(${bp.x},${bp.y})`);
+      g.setAttribute("opacity", P.steps.length? "1":"0");
+      return;
+    }
+    // an extra ball only exists while its own pass is in the air
+    const list=(P.byLane&&P.byLane[lane])||[];
+    const live=list.find(st=> t>=st.start && t<=st.end+0.4);
+    if(!live){ g.setAttribute("opacity","0"); return; }
+    const q = t<=live.end
+      ? ptOn(live.s, (t-live.start)/Math.max(0.001, live.end-live.start))
+      : live.end_pt;
+    g.setAttribute("transform",`translate(${q.x},${q.y})`);
+    g.setAttribute("opacity","1");
+  });
   // hide the static start ball so there are not two
   (board().shapes||[]).forEach(s=>{
     if(s.t!=="ball") return;
