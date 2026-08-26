@@ -201,6 +201,8 @@ body.tab-squad #mBtnPng,body.tab-squad #mBtnPrint{display:none}
 .lbbtn.go{background:var(--accent);border-color:var(--accent);color:#07130c}
 .lbbtn.on{background:var(--accent);border-color:var(--accent);color:#07130c}
 #lbAdd{font-size:15px;padding:0 8px}
+#lbSize{padding:0 9px;display:flex;align-items:center;justify-content:center}
+#lbSize i{display:block;width:16px;background:currentColor;border-radius:3px}
 .lurow .lubin{min-width:34px;min-height:34px}
 #btnZoomReset{position:absolute;right:14px;top:14px;z-index:15;display:none;
   background:rgba(11,16,20,.82);border:1px solid var(--line);border-radius:20px;
@@ -662,6 +664,7 @@ textarea.inp{resize:vertical;min-height:64px;font-size:12.5px}
             <span id="lbWhat"></span>
             <input id="lbIn" maxlength="4" autocomplete="off" spellcheck="false" aria-label="Label for the selected object">
             <input type="color" id="lbColor" aria-label="Colour of the selected object" title="Colour">
+            <button id="lbSize" class="lbbtn" title="Thickness — tap to cycle thin, medium, thick" aria-label="Thickness"><i></i></button>
             <button id="lbAdd" class="lbbtn" title="Pick more, then group them so they happen together" aria-label="Pick more than one">＋</button>
             <button id="lbGroup" class="lbbtn go" title="These happen at the same moment" aria-label="Group them">Group</button>
             <button id="lbUngroup" class="lbbtn" title="Let them happen one at a time again" aria-label="Ungroup">Ungroup</button>
@@ -2607,7 +2610,7 @@ const C = {
 };
 const PALETTE = [null,"#ffffff","#f5a524","#38bdf8","#e2574c","#37c86b","#c77dff","#111827"];
 
-const BUILD = "2026-08-25 · running order";
+const BUILD = "2026-08-25 · resize arrows";
 
 let uid = 1;
 const nid = () => "s" + (uid++);
@@ -2952,16 +2955,45 @@ function render(){
   renderHandles();
   fitBoard();
 }
+/* anything drawn from one point to another can be re-sized by its ends */
+const TWO_ENDED = new Set(["line","pass","run","shot","carry","curve","rect","ellipse","zone"]);
+let sizing = null;      // set while an end is being dragged, so the length shows
+
 function renderHandles(){
   if(!gHandle) return;
   clear(gHandle);
   if(!S.sel) return;
   const s=(board().shapes||[]).find(x=>x.id===S.sel);
-  if(!s||s.t!=="curve") return;
+  if(!s || !TWO_ENDED.has(s.t) || !s.p || s.p.length<2) return;
   const a=s.p[0], b=s.p[1];
-  const cp=curvePath(a.x,a.y,b.x,b.y, s.o&&s.o.bend!==undefined?s.o.bend:28);
-  el("circle",{cx:cp.cx,cy:cp.cy,r:11*S.k,fill:"#37c86b",stroke:"#0b1014",
-    "stroke-width":2*S.k,"data-handle":"bend",style:"cursor:move"},gHandle);
+
+  if(s.t==="curve"){
+    const cp=curvePath(a.x,a.y,b.x,b.y, s.o&&s.o.bend!==undefined?s.o.bend:28);
+    el("circle",{cx:cp.cx,cy:cp.cy,r:11*S.k,fill:"#37c86b",stroke:"#0b1014",
+      "stroke-width":2*S.k,"data-handle":"bend",style:"cursor:move"},gHandle);
+  }
+  // grab either end and stretch it — bigger to catch a thumb on a phone
+  const grab=(q,which)=>{
+    const g=el("g",{"data-handle":which,style:"cursor:grab"},gHandle);
+    el("circle",{cx:q.x,cy:q.y,r:(S.phone?30:16)*S.k,fill:"transparent"},g);
+    el("circle",{cx:q.x,cy:q.y,r:9*S.k,fill:"#ffffff",stroke:"#0b1014","stroke-width":2.4*S.k},g);
+    el("circle",{cx:q.x,cy:q.y,r:3.4*S.k,fill:"#37c86b"},g);
+  };
+  grab(a,"p0"); grab(b,"p1");
+
+  // how long it is, while you are dragging it
+  if(sizing && sizing.id===s.id){
+    const box=s.t==="rect"||s.t==="ellipse"||s.t==="zone";
+    const txt=box ? `${Math.round(Math.abs(b.x-a.x)/10)} × ${Math.round(Math.abs(b.y-a.y)/10)} yd`
+                  : `${Math.round(Math.hypot(b.x-a.x,b.y-a.y)/10)} yd`;
+    const mx=(a.x+b.x)/2, my=(a.y+b.y)/2;
+    const gf=fixed(el("g",{},gHandle),mx,my);
+    const w=txt.length*7.6*S.k+16*S.k;
+    el("rect",{x:mx-w/2,y:my-32*S.k,width:w,height:22*S.k,rx:7*S.k,
+      fill:"rgba(11,16,20,.88)",stroke:"#2b353f","stroke-width":1.2*S.k},gf);
+    el("text",{x:mx,y:my-16.5*S.k,"text-anchor":"middle","font-size":13*S.k,
+      "font-weight":800,fill:"#e7edf2","font-family":"inherit"},gf).textContent=txt;
+  }
 }
 /* visible rectangle, after rotation and pinch zoom */
 function baseVB(){
@@ -3197,8 +3229,12 @@ function setTool(t){
   if(typeof refreshSheet==="function") refreshSheet();
 }
 function applyToSel(patch){
-  const s=board().shapes.find(x=>x.id===S.sel); if(!s) return;
-  pushHist(); Object.assign(s,patch); render();
+  const ids=new Set(S.sel ? [S.sel].concat(S.selx||[]) : []);
+  const hit=board().shapes.filter(x=>ids.has(x.id));
+  if(!hit.length) return;
+  pushHist();
+  hit.forEach(s=>Object.assign(s,patch));   // several picked, all of them change
+  render(); if(typeof syncHash==="function") syncHash();
 }
 function clearDrawings(){
   pushHist(); board().shapes=[]; S.sel=null; S.selx=[]; render();
@@ -3237,7 +3273,7 @@ function startPinch(){
     d0:Math.hypot(a.x-b.x, a.y-b.y)||1,
     m0:{x:(a.x+b.x)/2, y:(a.y+b.y)/2}
   };
-  tmp=null; dragInfo=null; pan=null; render();
+  tmp=null; dragInfo=null; pan=null; sizing=null; render();
 }
 function movePinch(){
   if(!pinch || ptrs.size<2) return;
@@ -3281,7 +3317,17 @@ svg.addEventListener("pointerdown", e=>{
   }
   if(S.tool==="select"){
     const h=e.target.closest("[data-handle]");
-    if(h){ dragInfo={kind:"bend", id:S.sel}; pushHist(); return; }
+    if(h){
+      const which=h.getAttribute("data-handle");
+      pushHist();
+      if(which==="bend"){ dragInfo={kind:"bend", id:S.sel}; }
+      else{
+        dragInfo={kind:"end", id:S.sel, i: which==="p1" ? 1 : 0};
+        sizing={id:S.sel};
+        renderHandles();
+      }
+      return;
+    }
     const tk=e.target.closest("[data-pid]");
     if(tk){
       const idx=+tk.dataset.pid;
@@ -3369,6 +3415,10 @@ svg.addEventListener("pointermove", e=>{
       const dx=p.x-dragInfo.last.x, dy=p.y-dragInfo.last.y;
       s.p=s.p.map(q=>({x:q.x+dx,y:q.y+dy}));
       dragInfo.last=p; render();
+    } else if(dragInfo.kind==="end"){
+      const s=board().shapes.find(x=>x.id===dragInfo.id); if(!s) return;
+      s.p[dragInfo.i]={ x:Math.max(-60,Math.min(1110,p.x)), y:Math.max(-60,Math.min(740,p.y)) };
+      render();
     } else if(dragInfo.kind==="bend"){
       const s=board().shapes.find(x=>x.id===dragInfo.id); if(!s) return;
       const a=s.p[0], b=s.p[1];
@@ -3392,7 +3442,8 @@ svg.addEventListener("pointerup", e=>{
   if(pinch){ if(ptrs.size<2){ pinch=null; } return; }
   if(pan){ pan=null; return; }
   if(dragInfo){
-    const d=dragInfo; dragInfo=null; render(); updateStatus();
+    const d=dragInfo; dragInfo=null; sizing=null; render(); updateStatus();
+    if(d.kind==="end") syncHash();
     // a tap rather than a drag opens the player editor, and undoes nothing
     if(d.kind==="player" && Math.hypot(e.clientX-d.sx, e.clientY-d.sy)<5){
       S.hist[S.tab].u.pop();
@@ -3419,7 +3470,7 @@ svg.addEventListener("touchcancel", ()=>{ ptrs.clear(); pinch=null; }, {passive:
 svg.addEventListener("pointercancel", e=>{
   ptrs.delete(e.pointerId);
   if(ptrs.size<2) pinch=null;
-  tmp=null; dragInfo=null; pan=null; render();
+  tmp=null; dragInfo=null; pan=null; sizing=null; render();
 });
 svg.addEventListener("wheel", e=>{
   if(!(e.ctrlKey||e.metaKey)) return;             // trackpad pinch / ctrl+scroll
@@ -4026,6 +4077,15 @@ function openHelp(){
     <p>Click any player, pass or run with the <b>arrow</b> tool and a small box appears at the top left of the board. Type into it: a shirt number on a player, a number on a pass, a letter on a run. Click the same thing <b>twice</b> to jump straight into that box. Drop a new player on the board and the box is already waiting.</p>
     <p>The <b>1&middot;2&middot;3</b> button on the toolbar does the whole board at once — every pass gets 1, 2, 3 and every run gets A, B, C, in the order you drew them. On a phone it is under the <b>&hellip;</b> button, called <b>Number the passes and runs</b>.</p>
     <p class="hint">The badge on a pass or a run is not just decoration: <b>Play</b> follows those numbers. Renumber a pass and the animation reorders itself to match, which is also how you fix a drill that plays back in the wrong order.</p>
+    <h4>Changing something you have already drawn</h4>
+    <p>Click or tap an arrow with the <b>arrow</b> tool and a white grab handle appears at each end.</p>
+    <ul>
+      <li><b>Drag either end</b> to make it longer, shorter or point somewhere else. The other end stays put, and the length in yards shows while you drag.</li>
+      <li><b>Drag the middle</b> to move the whole thing without changing its length.</li>
+      <li>A <b>curved</b> pass keeps its green handle in the middle for the amount of bend, as well as the two ends.</li>
+      <li><b>Zones, boxes and circles</b> are resized the same way, by their corners.</li>
+      <li>The <b>thickness</b> button in the bar cycles thin, medium and thick. Pick several things first and they all change together.</li>
+    </ul>
     <h4>The running order</h4>
     <p>While you are in <b>Build</b> there is a list beside the board — every pass, run, dribble and shot in the drill, in the order it happens. It is the plainest way to say <i>this, then this</i>.</p>
     <ul>
@@ -5082,6 +5142,9 @@ function toggleSelMore(id){
   render();
 }
 const canGroup = s => isRunShape(s) || isBallShape(s);
+/* things drawn with a stroke, whose thickness can be changed after the fact */
+const WIDTHED = new Set(["line","pass","run","shot","carry","curve","pen","rect","ellipse","zone"]);
+const SIZE_STEPS = [3,5,8];
 /* how many things on the board carry this one's badge */
 function groupSize(s){
   if(!s || !canGroup(s)) return 0;
@@ -5095,7 +5158,7 @@ function syncLabelBar(){
   const bar = $("#labelBar"); if(!bar) return;
   const inp = $("#lbIn"), what = $("#lbWhat");
   const btnAdd = $("#lbAdd"), btnG = $("#lbGroup"), btnU = $("#lbUngroup"),
-        btnDone = $("#lbDone"), btnClr = $("#lbClear");
+        btnDone = $("#lbDone"), btnClr = $("#lbClear"), btnSize = $("#lbSize");
   const show = n => { if(n) n.style.display = ""; };
   const hide = n => { if(n) n.style.display = "none"; };
   const many = selIds().length > 1;
@@ -5103,7 +5166,18 @@ function syncLabelBar(){
 
   if(!s || (!k && !many)){ bar.classList.remove("on"); S.addSel = false; return; }
   bar.classList.add("on");
-  [inp, btnAdd, btnG, btnU, btnDone, btnClr].forEach(hide);
+  [inp, btnAdd, btnG, btnU, btnDone, btnClr, btnSize].forEach(hide);
+
+  /* thickness — anything drawn with a stroke can be made thinner or fatter */
+  const drawn = selShapes().filter(x => WIDTHED.has(x.t));
+  if(drawn.length && btnSize){
+    show(btnSize);
+    const w = drawn[0].w || S.width;
+    const px = w <= 3 ? 3 : (w <= 5 ? 5 : 8);
+    const dot = btnSize.querySelector("i");
+    if(dot) dot.style.height = px + "px";
+    btnSize.title = "Thickness: " + (px===3 ? "thin" : px===5 ? "medium" : "thick") + " — tap to change";
+  }
 
   if(many){
     /* several things picked — this bar is about tying them together */
@@ -5273,6 +5347,21 @@ function numberSequence(){
   });
   const cl = $("#lbClear");
   if(cl) cl.onclick = ()=>{ pushHist(); inp.value = ""; setLabel(""); inp.focus(); };
+
+  const sz = $("#lbSize");
+  if(sz) sz.onclick = ()=>{
+    const drawn = selShapes().filter(x => WIDTHED.has(x.t));
+    if(!drawn.length) return;
+    const now = drawn[0].w || S.width;
+    const at = SIZE_STEPS.findIndex(v => v >= now);
+    const next = SIZE_STEPS[((at < 0 ? 0 : at) + 1) % SIZE_STEPS.length];
+    pushHist();
+    drawn.forEach(x=>{ x.w = next; });
+    S.width = next;
+    render(); syncHash();
+    if(typeof buildToolbar === "function") buildToolbar();
+    if(typeof buildDock === "function") buildDock();
+  };
 
   const add = $("#lbAdd");
   if(add) add.onclick = ()=>{
